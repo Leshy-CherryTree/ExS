@@ -36,11 +36,19 @@ public class Voice
 	
 	//--------------------------------------------------------------------------
 	
-//	public void setNote(Note note)
-//	{
-//		
-//	}
+	public void rebuild()
+	{
+		oscilator.rebuild();
+		oscilator.getOutput().connect(filter.getInput());
+	}
 	
+	//--------------------------------------------------------------------------
+	
+	public OscillatorModule getOscilator()
+	{
+		return oscilator;
+	}
+		
 	//--------------------------------------------------------------------------
 	
 	public UnitOutputPort getOutput()

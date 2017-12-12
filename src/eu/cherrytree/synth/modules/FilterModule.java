@@ -11,7 +11,8 @@ import com.jsyn.Synthesizer;
 import com.jsyn.ports.UnitInputPort;
 import com.jsyn.ports.UnitOutputPort;
 import com.jsyn.unitgen.FilterStateVariable;
-import com.jsyn.unitgen.UnitFilter;
+
+
 
 /**
  *
@@ -24,7 +25,7 @@ public class FilterModule extends SynthModule
 	private FilterStateVariable filter;
 	private LFOModule lfo;
 	
-	private FilterType type;
+	private FilterType type = FilterType.LowPass;
 		
 	//--------------------------------------------------------------------------
 

@@ -45,16 +45,10 @@ public class AmpModule extends SynthModule
 	
 	//--------------------------------------------------------------------------
 	
-	public void setGain(float gain)
-	{
-		mixer.gain.set(gain);
-	}
-	
-	//--------------------------------------------------------------------------
-	
 	public void setVoices(Voice[] voices)
 	{
 		mixer.input.disconnectAll();
+		mixer.output.disconnectAll();
 		
 		for (int i = 0 ; i < voices.length ; i++)
 			voices[i].getOutput().connect(0, mixer.input, i);

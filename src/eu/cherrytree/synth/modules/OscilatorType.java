@@ -45,6 +45,24 @@ public enum OscilatorType
 	
 	//--------------------------------------------------------------------------
 	
+	public static OscilatorType get(int val)
+	{
+		int step = 127 / OscilatorType.values().length;
+		int count = 0;
+		
+		for (OscilatorType type : OscilatorType.values())
+		{
+			if (val <= count)
+				return type;
+			
+			count += step;			
+		}
+		
+		return OscilatorType.values()[OscilatorType.values().length-1];
+	}
+	
+	//--------------------------------------------------------------------------
+	
 	public UnitOscillator create()
 	{
 		switch (this)

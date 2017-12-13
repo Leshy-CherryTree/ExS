@@ -39,6 +39,8 @@ public class Voice
 	public void rebuild()
 	{
 		oscilator.rebuild();
+		filter.rebuild();
+		
 		oscilator.getOutput().connect(filter.getInput());
 	}
 	
@@ -48,7 +50,14 @@ public class Voice
 	{
 		return oscilator;
 	}
-		
+	
+	//--------------------------------------------------------------------------
+
+	public FilterModule getFilter()
+	{
+		return filter;
+	}
+				
 	//--------------------------------------------------------------------------
 	
 	public UnitOutputPort getOutput()

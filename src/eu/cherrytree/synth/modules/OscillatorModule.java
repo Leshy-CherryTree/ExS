@@ -156,12 +156,13 @@ public class OscillatorModule extends SynthModule
 	private MixMode mode = MixMode.Mix;
 
 	private int note = -1;
+	private float strength = -1.0f;
 	
-	private float osc1Amplitude;
-	private float osc2Amplitude;
+	private float osc1Amplitude = 1.0f;
+	private float osc2Amplitude = 1.0f;
 	
-	private float osc1Detune;
-	private float osc2Detune;
+	private float osc1Detune = 1.0f;
+	private float osc2Detune = 1.0f;
 	
 	//--------------------------------------------------------------------------
 	
@@ -175,12 +176,20 @@ public class OscillatorModule extends SynthModule
 	public void setNote(int note, float strength)
 	{
 		this.note = note;
+		this.strength = strength;
 		
-		osc1.frequency.set(notes[note] / 2.0f);
-		osc2.frequency.set(notes[note]);
+		osc1.frequency.set(notes[note] * osc1Detune);
+		osc2.frequency.set(notes[note] * osc2Detune);
 		
-		osc1.amplitude.set(strength);
-		osc2.amplitude.set(strength);
+		if (mode == MixMode.Mix)
+		{
+			osc1.amplitude.set(strength * osc1Amplitude);
+			osc2.amplitude.set(strength * osc2Amplitude);
+		}
+		else
+		{
+			// WHAT ?
+		}
 	}
 	
 	//--------------------------------------------------------------------------
@@ -201,17 +210,115 @@ public class OscillatorModule extends SynthModule
 	}
 	
 	//--------------------------------------------------------------------------
+
+	public void setOsc1Type(OscilatorType osc1Type)
+	{
+		this.osc1Type = osc1Type;
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setOsc2Type(OscilatorType osc2Type)
+	{
+		this.osc2Type = osc2Type;
+	}	
+	
+	//--------------------------------------------------------------------------
+
+	public OscilatorType getOsc1Type()
+	{
+		return osc1Type;
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public OscilatorType getOsc2Type()
+	{
+		return osc2Type;
+	}		
+	
+	//--------------------------------------------------------------------------
+	
+	public void updateNote()		
+	{
+		
+		if(note > 0)
+			setNote(note, strength);
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setOsc1Amplitude(float amplitude)
+	{
+		this.osc1Amplitude = amplitude;
+		
+		updateNote();
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setOsc1Detune(float detune)
+	{
+		this.osc1Detune = detune;
+		
+		updateNote();
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setOsc2Amplitude(float amplitude)
+	{
+		this.osc2Amplitude = amplitude;
+		
+		updateNote();
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setOsc2Detune(float detune)
+	{
+		this.osc2Detune = detune;
+		
+		updateNote();
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public void setOsc1Phase(float phase)
+	{
+		osc1.phase.set(phase);
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public void setOsc2Phase(float phase)
+	{
+		osc2.phase.set(phase);
+	}
+	
+	//--------------------------------------------------------------------------
 	
 	public void rebuild()
 	{
 		if (osc1 != null)
+		{
+			osc1.output.disconnectAll();			
 			getSynthesizer().remove(osc1);
+		}
 		
 		if (osc2 != null)
+		{
+			osc2.output.disconnectAll();
 			getSynthesizer().remove(osc2);
+		}
 		
 		if (mixer != null)
+		{
+			mixer.input.disconnectAll();
+			mixer.output.disconnectAll();
+			
 			getSynthesizer().remove(mixer);
+		}
 		
 		osc1 = osc1Type.create();
 		osc2 = osc2Type.create();

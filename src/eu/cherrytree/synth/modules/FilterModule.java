@@ -38,6 +38,16 @@ public class FilterModule extends SynthModule
 	}
 	
 	//--------------------------------------------------------------------------
+	
+	public void rebuild()
+	{
+		filter.input.disconnectAll();
+		filter.highPass.disconnectAll();
+		filter.bandPass.disconnectAll();
+		filter.lowPass.disconnectAll();
+	}
+	
+	//--------------------------------------------------------------------------
 
 	public void setType(FilterType type)
 	{
@@ -45,17 +55,17 @@ public class FilterModule extends SynthModule
 	}
 	
 	//--------------------------------------------------------------------------
+
+	public FilterType getType()
+	{
+		return type;
+	}
+			
+	//--------------------------------------------------------------------------
 	
 	public void setFrequency(float frequency)
 	{
 		filter.frequency.set(frequency);
-	}
-	
-	//--------------------------------------------------------------------------
-	
-	public void setAmplitude(float amplitude)
-	{
-		filter.amplitude.set(amplitude);
 	}
 	
 	//--------------------------------------------------------------------------

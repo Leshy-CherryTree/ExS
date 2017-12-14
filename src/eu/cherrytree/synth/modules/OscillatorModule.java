@@ -138,14 +138,6 @@ public class OscillatorModule extends SynthModule
 	
 	//--------------------------------------------------------------------------
 	
-	public enum MixMode
-	{
-		Mix,
-		Modulate;
-	}
-	
-	//--------------------------------------------------------------------------
-	
 	private UnitOscillator osc1;
 	private UnitOscillator osc2;
 	
@@ -178,18 +170,7 @@ public class OscillatorModule extends SynthModule
 		this.note = note;
 		this.strength = strength;
 		
-		osc1.frequency.set(notes[note] * osc1Detune);
-		osc2.frequency.set(notes[note] * osc2Detune);
-		
-		if (mode == MixMode.Mix)
-		{
-			osc1.amplitude.set(strength * osc1Amplitude);
-			osc2.amplitude.set(strength * osc2Amplitude);
-		}
-		else
-		{
-			// WHAT ?
-		}
+		updateNote();
 	}
 	
 	//--------------------------------------------------------------------------
@@ -197,9 +178,8 @@ public class OscillatorModule extends SynthModule
 	public void endNote()
 	{
 		note = -1;		
-		
-		osc1.amplitude.set(0.0f);
-		osc2.amplitude.set(0.0f);
+
+		updateNote();
 	}
 			
 	//--------------------------------------------------------------------------
@@ -240,21 +220,30 @@ public class OscillatorModule extends SynthModule
 	//--------------------------------------------------------------------------
 	
 	public void updateNote()		
-	{
-		
+	{		
 		if(note > 0)
-			setNote(note, strength);
-	}
-	
-	//--------------------------------------------------------------------------
+		{
+			osc1.frequency.set(notes[note] * osc1Detune);
+			osc2.frequency.set(notes[note] * osc2Detune);
 
-	public void setOsc1Amplitude(float amplitude)
-	{
-		this.osc1Amplitude = amplitude;
-		
-		updateNote();
+			if (mode == MixMode.Mix)
+			{
+				osc1.amplitude.set(strength * osc1Amplitude);
+				osc2.amplitude.set(strength * osc2Amplitude);
+			}
+			else
+			{
+				osc1.amplitude.set(strength * osc1Amplitude);
+				osc2.amplitude.set(osc2Amplitude);
+			}
+		}
+		else
+		{					
+			osc1.amplitude.set(0.0f);
+			osc2.amplitude.set(0.0f);
+		}
 	}
-	
+		
 	//--------------------------------------------------------------------------
 
 	public void setOsc1Detune(float detune)
@@ -263,16 +252,7 @@ public class OscillatorModule extends SynthModule
 		
 		updateNote();
 	}
-	
-	//--------------------------------------------------------------------------
-
-	public void setOsc2Amplitude(float amplitude)
-	{
-		this.osc2Amplitude = amplitude;
 		
-		updateNote();
-	}
-	
 	//--------------------------------------------------------------------------
 
 	public void setOsc2Detune(float detune)
@@ -296,6 +276,27 @@ public class OscillatorModule extends SynthModule
 		osc2.phase.set(phase);
 	}
 	
+	//--------------------------------------------------------------------------
+	
+	public void setRatio(float ratio)
+	{
+		
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setMixMode(MixMode mode)
+	{
+		this.mode = mode;
+	}
+			
+	//--------------------------------------------------------------------------
+
+	public MixMode getMixMode()
+	{
+		return mode;
+	}
+			
 	//--------------------------------------------------------------------------
 	
 	public void rebuild()

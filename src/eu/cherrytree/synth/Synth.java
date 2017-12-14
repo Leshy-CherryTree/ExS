@@ -23,6 +23,7 @@ import javax.sound.midi.ShortMessage;
 
 import eu.cherrytree.synth.modules.AmpModule;
 import eu.cherrytree.synth.modules.FilterType;
+import eu.cherrytree.synth.modules.MixMode;
 import eu.cherrytree.synth.modules.OscilatorType;
 import java.util.Collections;
 
@@ -36,25 +37,35 @@ public class Synth implements Receiver
 {
 	//--------------------------------------------------------------------------
 	
-	private static final int OSC1Amplitude		= 16;
-	private static final int OSC1Detune			= 17;
-	private static final int OSC1Phase			= 18;
-	private static final int OSC1Type			= 24;
-	private static final int OSC2Amplitude		= 20;
-	private static final int OSC2Detune			= 21;
-	private static final int OSC2Phase			= 22;
-	private static final int OSC2Type			= 25;
-	private static final int OSCMixMode			= 26;
-	private static final int FilterFrequency	= 28;
-	private static final int FilterResonance		= 29;
-	private static final int FilterPassType		= 30;
-	private static final int FilterLFORate		= 46;
-	private static final int FilterLFOAmplitude	= 47;
-	private static final int FilterLFOType		= 48;
-	private static final int AmpAmplitude		= 62;
-	private static final int AmpLFORate			= 50;
-	private static final int AmpLFOAmplitude		= 51;
-	private static final int AmpLFOType			= 52;
+	private static final int AmpShift						= 1;
+	private static final int AmpLFOToggle					= 3;
+	
+	private static final int OSCMixModeAmpFORateLFOType		= 16;
+	private static final int OSCMixRatioAmpLFOAmplitude		= 17;	
+	private static final int AmpLFOType						= 18;		// Add something here.
+	
+	private static final int OSC1Shift						= 4;
+	private static final int OSC1LFOToggle					= 6;
+	
+	private static final int OSC1TypeLFORate					= 20;
+	private static final int OSC1DetuneLFOAmplitude			= 21;
+	private static final int OSC1PhaseLFOType				= 22;
+	
+	private static final int OSC2Shift						= 7;
+	private static final int OSC2LFOToggle					= 9;
+	
+	private static final int OSC2TypeLFORate					= 24;
+	private static final int OSC2DetuneLFOAmplitude			= 25;
+	private static final int OSC2PhaseLFOType				= 26;
+	
+	private static final int FilterShift						= 10;
+	private static final int FilterLFOToggle					= 12;
+	
+	private static final int FilterFrequencyLFORate			= 28;
+	private static final int FilterResonanceLFOAmplitude		= 29;
+	private static final int FilterPassTypeLFOType			= 30;
+
+	private static final int AmpAmplitude					= 62;
 	
 	//--------------------------------------------------------------------------
 	
@@ -64,6 +75,11 @@ public class Synth implements Receiver
 	
 	private Voice[] voices;
 
+	private boolean OSC1ShiftFlag = false;
+	private boolean OSC2ShiftFlag = false;
+	private boolean AmpShiftFlag = false;
+	private boolean FilterShiftFlag = false;
+	
 	private HashMap<Integer, Voice> voice_note_map = new HashMap<>();
 	private ArrayList<Voice> used_voices = new ArrayList<>();
 	private ArrayList<Voice> free_voices = new ArrayList<>();
@@ -203,7 +219,23 @@ public class Synth implements Receiver
 	{
 		switch (id)
 		{
-			case FilterFrequency:
+			case AmpShift:
+				AmpShiftFlag = (value > 63);
+				break;
+			
+			case FilterShift:
+				FilterShiftFlag = (value > 63);
+				break;
+			
+			case OSC1Shift:
+				OSC1ShiftFlag = (value > 63);
+				break;
+			
+			case OSC2Shift:
+				OSC2ShiftFlag = (value > 63);
+				break;
+				
+			case FilterFrequencyLFORate:
 			{								
 				float frequency = value / 127.0f;
 				frequency *= 8000.0f;
@@ -216,7 +248,7 @@ public class Synth implements Receiver
 				break;
 			}
 			
-			case FilterResonance:
+			case FilterResonanceLFOAmplitude:
 			{
 				float resonance = value / 127.0f;
 				
@@ -228,7 +260,7 @@ public class Synth implements Receiver
 				break;
 			}
 			
-			case FilterPassType:
+			case FilterPassTypeLFOType:
 			{
 				FilterType type;
 								
@@ -262,7 +294,7 @@ public class Synth implements Receiver
 				break;
 			}
 			
-			case OSC1Type:
+			case OSC1TypeLFORate:
 			{
 				OscilatorType type = OscilatorType.get(value);
 				
@@ -279,7 +311,7 @@ public class Synth implements Receiver
 				break;
 			}
 			
-			case OSC2Type:
+			case OSC2TypeLFORate:
 			{
 				OscilatorType type = OscilatorType.get(value);
 				
@@ -296,20 +328,39 @@ public class Synth implements Receiver
 				break;
 			}
 			
-			case OSC1Amplitude:
+			case OSCMixModeAmpFORateLFOType:
 			{
-				float amplitude = value / 127.0f;
+				MixMode mode = value > 63 ? MixMode.Mix : MixMode.Modulate;
 				
-				System.out.println("Setting osc1 amplitude: " + amplitude);
-				
-				for (Voice v : voices)
-					v.getOscilator().setOsc1Amplitude(amplitude);
+				if (mode != voices[0].getOscilator().getMixMode())
+				{
+					System.out.println("Setting mix mode: " + mode);
+					
+					for (Voice v : voices)
+						v.getOscilator().setMixMode(mode);
+					
+					rebuild();
+				}
 				
 				break;
 			}
 			
-			case OSC1Detune:
+			case OSCMixRatioAmpLFOAmplitude:
 			{
+				float ratio = value / 63.5f;
+				
+				System.out.println("Setting osc mix ratio: " + ratio);
+				
+				for (Voice v : voices)
+					v.getOscilator().setRatio(ratio);
+				
+				break;
+			}
+			
+			case OSC1DetuneLFOAmplitude:
+			{
+				// Make it 2 octaves.
+				
 				float detune = value / 127.0f;
 				
 				if (detune > 0.51f)
@@ -327,7 +378,7 @@ public class Synth implements Receiver
 				break;
 			}
 			
-			case OSC1Phase:
+			case OSC1PhaseLFOType:
 			{
 				float phase = (value / 63.5f) - 1.0f;
 				
@@ -337,22 +388,12 @@ public class Synth implements Receiver
 					v.getOscilator().setOsc1Phase(phase);
 				
 				break;
-			}
+			}	
 			
-			case OSC2Amplitude:
+			case OSC2DetuneLFOAmplitude:
 			{
-				float amplitude = value / 127.0f;
+				// Make it 2 octaves.
 				
-				System.out.println("Setting osc2 amplitude: " + amplitude);
-				
-				for (Voice v : voices)
-					v.getOscilator().setOsc2Amplitude(amplitude);
-				
-				break;
-			}			
-			
-			case OSC2Detune:
-			{
 				float detune = value / 127.0f;
 
 				if (detune > 0.51f)
@@ -370,7 +411,7 @@ public class Synth implements Receiver
 				break;
 			}
 			
-			case OSC2Phase:
+			case OSC2PhaseLFOType:
 			{
 				float phase = (value / 63.5f) - 1.0f;
 				

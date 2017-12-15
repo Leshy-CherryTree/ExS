@@ -11,6 +11,7 @@ import com.jsyn.Synthesizer;
 import com.jsyn.ports.UnitOutputPort;
 
 import com.jsyn.unitgen.MixerMono;
+import com.jsyn.unitgen.Multiply;
 import com.jsyn.unitgen.UnitOscillator;
 
 
@@ -142,6 +143,7 @@ public class OscillatorModule extends SynthModule
 	private UnitOscillator osc2;
 	
 	private MixerMono mixer;
+	private Modulate modulate;
 	
 	private OscilatorType osc1Type = OscilatorType.Sine;
 	private OscilatorType osc2Type = OscilatorType.Sine;
@@ -150,8 +152,7 @@ public class OscillatorModule extends SynthModule
 	private int note = -1;
 	private float strength = -1.0f;
 	
-	private float osc1Amplitude = 1.0f;
-	private float osc2Amplitude = 1.0f;
+	private float ratio = 0.5f;
 	
 	private float osc1Detune = 1.0f;
 	private float osc2Detune = 1.0f;
@@ -235,13 +236,13 @@ public class OscillatorModule extends SynthModule
 
 			if (mode == MixMode.Mix)
 			{
-				osc1.amplitude.set(strength * osc1Amplitude);
-				osc2.amplitude.set(strength * osc2Amplitude);
+				osc1.amplitude.set(strength * ratio);
+				osc2.amplitude.set(strength * (1.0f - ratio));
 			}
 			else
 			{
-				osc1.amplitude.set(strength * osc1Amplitude);
-				osc2.amplitude.set(osc2Amplitude);
+				osc1.amplitude.set(strength);
+				modulate.inputB.set(strength);
 			}
 		}
 		else
@@ -287,7 +288,17 @@ public class OscillatorModule extends SynthModule
 	
 	public void setRatio(float ratio)
 	{
+		this.ratio = ratio;
 		
+		if (mode == MixMode.Mix)
+		{
+			osc1.amplitude.set(strength * ratio);
+			osc2.amplitude.set(strength * (1.0f - ratio));
+		}
+		else
+		{
+			modulate.ratio.set(ratio);
+		}
 	}
 	
 	//--------------------------------------------------------------------------
@@ -328,6 +339,15 @@ public class OscillatorModule extends SynthModule
 			getSynthesizer().remove(mixer);
 		}
 		
+		if (modulate != null)
+		{
+			modulate.inputA.disconnectAll();
+			modulate.inputB.disconnectAll();
+			modulate.output.disconnectAll();
+			
+			getSynthesizer().remove(modulate);
+		}
+		
 		osc1 = osc1Type.create();
 		osc2 = osc2Type.create();
 		
@@ -339,6 +359,8 @@ public class OscillatorModule extends SynthModule
 		
 		if (mode == MixMode.Mix)
 		{
+			modulate = null;
+			
 			mixer = new MixerMono(2);
 			getSynthesizer().add(mixer);
 			
@@ -349,7 +371,14 @@ public class OscillatorModule extends SynthModule
 		{
 			mixer = null;
 			
-			osc1.output.connect(osc2.amplitude);
+			modulate = new Modulate();
+			getSynthesizer().add(modulate);
+			
+			modulate.inputA.connect(osc1.output);
+			modulate.inputB.set(strength);
+			modulate.ratio.set(ratio);
+			
+			modulate.output.connect(osc2.amplitude);
 		}
 	}
 	

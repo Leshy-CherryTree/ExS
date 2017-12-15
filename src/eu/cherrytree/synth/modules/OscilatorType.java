@@ -24,23 +24,32 @@ public enum OscilatorType
 {
 	//--------------------------------------------------------------------------
 	
-	Impulse			(ImpulseOscillator.class),
-	Pulse			(PulseOscillator.class),
-	Sawtooth			(SawtoothOscillator.class),
-	SawtoothDPW		(SawtoothOscillatorDPW.class),
-	Sine				(SineOscillator.class),
-	Square			(SquareOscillator.class),
-	Triangle			(TriangleOscillator.class);
+	Impulse			(ImpulseOscillator.class,		"IMP"),
+	Pulse			(PulseOscillator.class,			"PLS"),
+	Sawtooth		(SawtoothOscillator.class,		"SAW"),
+	SawtoothDPW		(SawtoothOscillatorDPW.class,	"SW2"),
+	Sine			(SineOscillator.class,			"SIN"),
+	Square			(SquareOscillator.class,		"SQE"),
+	Triangle		(TriangleOscillator.class,		"TRI");
 
 	//--------------------------------------------------------------------------
 	
-	private Class<? extends UnitOscillator> type;
+	private final Class<? extends UnitOscillator> type;
+	private final String symbol;
 
 	//--------------------------------------------------------------------------
-	
-	private OscilatorType(Class<? extends UnitOscillator> type)
+
+	private OscilatorType(Class<? extends UnitOscillator> type, String symbol)
 	{
 		this.type = type;
+		this.symbol = symbol;
+	}
+			
+	//--------------------------------------------------------------------------
+
+	public String getSymbol()
+	{
+		return symbol;
 	}
 	
 	//--------------------------------------------------------------------------

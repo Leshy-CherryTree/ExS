@@ -7,6 +7,7 @@
 
 package eu.cherrytree.synth.modules;
 
+import eu.cherrytree.synth.operators.Modulate;
 import com.jsyn.Synthesizer;
 import com.jsyn.ports.UnitOutputPort;
 

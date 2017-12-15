@@ -1,7 +1,7 @@
 /****************************************/
-/* BitCrusherFilter.java				*/
+/* BitCrusherFilter.java					*/
 /* Created on: 14-12-2017				*/
-/* Copyright Cherry Tree Studio 2017	*/
+/* Copyright Cherry Tree Studio 2017		*/
 /* Released under EUPL v1.1				*/
 /****************************************/
 

@@ -191,6 +191,13 @@ public class OscillatorModule extends SynthModule
 	
 	//--------------------------------------------------------------------------
 
+	public float getStrength()
+	{
+		return strength;
+	}
+			
+	//--------------------------------------------------------------------------
+
 	public void setOsc1Type(OscilatorType osc1Type)
 	{
 		this.osc1Type = osc1Type;

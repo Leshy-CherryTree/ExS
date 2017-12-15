@@ -22,6 +22,7 @@ import javax.sound.midi.Receiver;
 import javax.sound.midi.ShortMessage;
 
 import eu.cherrytree.synth.modules.AmpModule;
+import eu.cherrytree.synth.modules.EffectModule;
 import eu.cherrytree.synth.modules.FilterType;
 import eu.cherrytree.synth.modules.MixMode;
 import eu.cherrytree.synth.modules.OscilatorType;
@@ -65,15 +66,30 @@ public class Synth implements Receiver
 	private static final int FilterResonanceLFOAmplitude		= 29;
 	private static final int FilterPassTypeLFOType			= 30;
 
+	private static final int DistortionEnable				= 13;
+	private static final int DistortionLFOToggle				= 15;
+	
+	private static final int DistortionGainLFORate			= 46;
+	private static final int DistortionStrengthLFOAmplitude	= 47;
+	private static final int DistortionLevelLFOType			= 48;
+	
+	private static final int BitCrusherEnable				= 32;
+	private static final int BitCrusherLFOToggle				= 34;
+	
+	private static final int BitCrusherResolutionLFORate		= 50;
+	private static final int BitCrusherBitsLFOAmplitude		= 51;
+	private static final int BitCrusherLevelLFOType			= 52;
+	
 	private static final int AmpAmplitude					= 62;
 	
 	//--------------------------------------------------------------------------
 	
 	private Synthesizer synthesizer;
-	private LineOut lineOut;
+			
+	private Voice[] voices;	
 	private AmpModule amp;
-	
-	private Voice[] voices;
+	private EffectModule effects;
+	private LineOut lineOut;
 
 	private boolean OSC1ShiftFlag = false;
 	private boolean OSC2ShiftFlag = false;
@@ -96,17 +112,16 @@ public class Synth implements Receiver
 		voices = new Voice[voiceCount];
 		
 		for (int i = 0 ; i < voiceCount ; i++)
-		{
-			voices[i] = new Voice(synthesizer);
-			voices[i].rebuild();
-		}
+			voices[i] = new Voice(synthesizer);			
 		
 		amp = new AmpModule(synthesizer, voiceCount);		
 		amp.setVoices(voices);
 		
-		amp.getOutput().connect(lineOut.input);
+		effects = new EffectModule(synthesizer);
 		
 		synthesizer.add(lineOut);
+		
+		rebuild();
 		
 		lineOut.start();
 	
@@ -139,6 +154,18 @@ public class Synth implements Receiver
 	
 	private void rebuild()
 	{
+		ArrayList<Integer> notes = new ArrayList<>();
+		ArrayList<Float> strengths = new ArrayList<>();
+		
+		int used_len = used_voices.size();
+		
+		// Gathering information about current notes.
+		for (Voice v : used_voices)
+		{
+			notes.add(v.getOscilator().getNote());
+			strengths.add(v.getOscilator().getStrength());
+		}
+		
 		lineOut.stop();
 				
 		lineOut.input.disconnectAll();
@@ -148,9 +175,22 @@ public class Synth implements Receiver
 		
 		amp.setVoices(voices);
 		
-		amp.getOutput().connect(lineOut.input);	
+		effects.rebuild();
 		
-		lineOut.start();
+		amp.getOutput().connect(effects.getInput());	
+		effects.getOutput().connect(lineOut.input);	
+		
+		// Restarting all notes.
+		for (int i = 0 ; i < used_len ; i++)
+		{
+			int note = notes.get(i);
+			float strength = strengths.get(i);
+			Voice voice = used_voices.get(i);
+			
+			voice.getOscilator().setNote(note, strength);						
+		}
+		
+		lineOut.start();				
 	}
 	
 	//--------------------------------------------------------------------------	
@@ -422,6 +462,103 @@ public class Synth implements Receiver
 				
 				break;
 			}
+			
+			case DistortionEnable:
+			{
+				if (value > 63)
+				{
+					boolean enabled = !effects.isDistortionEnabled();
+					
+					System.out.println("Setting distortion: " + (enabled ? "enabled" : "disabled"));
+					
+					effects.setDistortionEnabled(enabled);
+					rebuild();
+				}
+				
+				break;
+			}
+			
+			case BitCrusherEnable:
+			{
+				if (value > 63)
+				{
+					boolean enabled = !effects.isBitCrusherEnabled();
+					
+					System.out.println("Setting bit crusher: " + (enabled ? "enabled" : "disabled"));
+					
+					effects.setBitCrusherEnabled(enabled);
+					rebuild();
+				}
+				
+				break;
+			}
+			
+			case DistortionGainLFORate:
+			{
+				float gain = value / 6.35f;
+				
+				System.out.println("Setting distortion gain: " + gain);
+				
+				effects.getDistortion().gain.set(gain);
+				
+				break;
+			}
+			
+			case DistortionStrengthLFOAmplitude:
+			{
+				float strength = value / 15.825f;
+				
+				System.out.println("Setting distortion strength: " + strength);
+				
+				effects.getDistortion().strength.set(strength);
+				
+				break;
+			}
+			
+			case DistortionLevelLFOType:
+			{
+				float level = value / 63.5f;
+				
+				System.out.println("Setting distortion level: " + level);
+				
+				effects.getDistortion().level.set(level);
+				
+				break;
+			}
+			
+			case BitCrusherResolutionLFORate:
+			{
+				float resolution = value / 4.09f + 1.0f;
+				
+				System.out.println("Setting bit crusher resolution: " + resolution);
+				
+				effects.getBitCrusher().resolution.set(resolution);
+				break;
+			}
+			
+			case BitCrusherBitsLFOAmplitude:
+			{
+				float bits = (1.0f - value / 127.0f) * 30.0f + 2.0f;
+				
+				System.out.println("Setting bit crusher bits: " + bits);
+				
+				effects.getBitCrusher().bits.set(bits);
+				
+				break;
+			}
+			
+			case BitCrusherLevelLFOType:
+			{
+				float level = value / 63.5f;
+				
+				System.out.println("Setting bit crusher level: " + level);
+				
+				effects.getBitCrusher().level.set(level);
+				
+				break;
+			}
+			
+			
 		}
 	}
 	

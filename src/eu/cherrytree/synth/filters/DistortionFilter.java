@@ -14,7 +14,7 @@ import com.jsyn.unitgen.UnitFilter;
 
 /**
  *
- * @author leszek.szczepanski
+ * @author Leszek Szczepański <leszek.gamedev@gmail.com>
  */
 public class DistortionFilter extends UnitFilter 
 {

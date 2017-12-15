@@ -45,6 +45,13 @@ public class AmpModule extends SynthModule
 	
 	//--------------------------------------------------------------------------
 	
+	public float getAmplitude()
+	{
+		return (float) mixer.amplitude.get();
+	}
+	
+	//--------------------------------------------------------------------------
+	
 	public void setVoices(Voice[] voices)
 	{
 		mixer.input.disconnectAll();

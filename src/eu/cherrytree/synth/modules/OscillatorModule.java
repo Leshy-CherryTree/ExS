@@ -158,6 +158,9 @@ public class OscillatorModule extends SynthModule
 	private float osc1Detune = 1.0f;
 	private float osc2Detune = 1.0f;
 	
+	private float osc1Phase = 0.0f;
+	private float osc2Phase = 0.0f;
+	
 	//--------------------------------------------------------------------------
 	
 	public OscillatorModule(Synthesizer synth)
@@ -227,6 +230,34 @@ public class OscillatorModule extends SynthModule
 	}		
 	
 	//--------------------------------------------------------------------------
+
+	public float getOsc1Detune()
+	{
+		return osc1Detune;
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public float getOsc2Detune()
+	{
+		return osc2Detune;
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public float getOsc1Phase()
+	{
+		return osc1Phase;
+	}
+
+	//--------------------------------------------------------------------------
+	
+	public float getOsc2Phase()
+	{
+		return osc2Phase;
+	}
+	
+	//--------------------------------------------------------------------------
 	
 	public void updateNote()		
 	{		
@@ -235,6 +266,9 @@ public class OscillatorModule extends SynthModule
 			osc1.frequency.set(notes[note] * osc1Detune);
 			osc2.frequency.set(notes[note] * osc2Detune);
 
+			osc1.phase.set(osc1Phase);
+			osc2.phase.set(osc2Phase);
+			
 			if (mode == MixMode.Mix)
 			{
 				osc1.amplitude.set(strength * ratio);
@@ -275,14 +309,18 @@ public class OscillatorModule extends SynthModule
 	
 	public void setOsc1Phase(float phase)
 	{
-		osc1.phase.set(phase);
+		osc1Phase = phase;
+		
+		updateNote();
 	}
 	
 	//--------------------------------------------------------------------------
 	
 	public void setOsc2Phase(float phase)
 	{
-		osc2.phase.set(phase);
+		osc2Phase = phase;
+		
+		updateNote();
 	}
 	
 	//--------------------------------------------------------------------------
@@ -302,6 +340,13 @@ public class OscillatorModule extends SynthModule
 		}
 	}
 	
+	//--------------------------------------------------------------------------
+
+	public float getRatio()
+	{
+		return ratio;
+	}
+		
 	//--------------------------------------------------------------------------
 
 	public void setMixMode(MixMode mode)
@@ -384,8 +429,7 @@ public class OscillatorModule extends SynthModule
 	}
 	
 	//--------------------------------------------------------------------------
-
-
+	
 	public UnitOutputPort getOutput()
 	{
 		if (mode == MixMode.Mix)

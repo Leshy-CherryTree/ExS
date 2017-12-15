@@ -63,6 +63,20 @@ public class FilterModule extends SynthModule
 			
 	//--------------------------------------------------------------------------
 	
+	public float getFrequency()
+	{
+		return (float) filter.frequency.get();
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public float getResonance()
+	{
+		return (float) filter.resonance.get();
+	}
+	
+	//--------------------------------------------------------------------------
+	
 	public void setFrequency(float frequency)
 	{
 		filter.frequency.set(frequency);

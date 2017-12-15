@@ -7,10 +7,6 @@
 
 package eu.cherrytree.synth;
 
-import com.googlecode.lanterna.graphics.TextGraphics;
-import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
-import com.googlecode.lanterna.terminal.Terminal;
-
 import java.io.IOException;
 
 
@@ -21,23 +17,12 @@ import java.io.IOException;
  */
 public class Application
 {		
-	public static void main(String[] args)
+	//--------------------------------------------------------------------------
+	
+	public static void main(String[] args) throws IOException
 	{
-		try
-		{
-			DefaultTerminalFactory defaultTerminalFactory = new DefaultTerminalFactory();
-			
-			Terminal terminal = defaultTerminalFactory.createTerminal();
-			
-			TextGraphics textGraphics = terminal.newTextGraphics();
-			
-			textGraphics.putString(0, 0, "WELCOME TO ExS-01");
-			
-			Synth synth = new Synth(2);
-		}
-		catch (IOException ex)
-		{
-			ex.printStackTrace();
-		}
+		Synth synth = new Synth(new Screen(), 8);
 	}
+	
+	//--------------------------------------------------------------------------
 }

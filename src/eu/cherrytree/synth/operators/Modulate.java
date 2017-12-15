@@ -1,8 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+/****************************************/
+/* Modulate.java						*/
+/* Created on: 15-12-2017				*/
+/* Copyright Cherry Tree Studio 2017	*/
+/* Released under EUPL v1.1				*/
+/****************************************/
+
 package eu.cherrytree.synth.operators;
 
 import com.jsyn.ports.UnitInputPort;
@@ -10,7 +12,7 @@ import com.jsyn.unitgen.UnitBinaryOperator;
 
 /**
  *
- * @author leszek.szczepanski
+ * @author Leszek Szczepański <leszek.gamedev@gmail.com>
  */
 public class Modulate extends UnitBinaryOperator
 {

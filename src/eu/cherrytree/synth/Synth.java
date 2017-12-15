@@ -100,10 +100,14 @@ public class Synth implements Receiver
 	private ArrayList<Voice> used_voices = new ArrayList<>();
 	private ArrayList<Voice> free_voices = new ArrayList<>();
 	
+	private Screen screen;
+	
 	//--------------------------------------------------------------------------
 	
-	public Synth(int voiceCount)
+	public Synth(Screen screen, int voiceCount)
 	{
+		this.screen = screen;
+		
 		synthesizer = JSyn.createSynthesizer();
 		synthesizer.start();
 		
@@ -190,7 +194,31 @@ public class Synth implements Receiver
 			voice.getOscilator().setNote(note, strength);						
 		}
 		
-		lineOut.start();				
+		lineOut.start();
+
+		screen.setOSCMixMode(voices[0].getOscilator().getMixMode());
+		screen.setOSCMIXRatio(voices[0].getOscilator().getRatio());
+		
+		screen.setOSC1Type(voices[0].getOscilator().getOsc1Type());
+		screen.setOSC2Type(voices[0].getOscilator().getOsc2Type());
+		screen.setOSC1Detune(voices[0].getOscilator().getOsc1Detune());
+		screen.setOSC2Detune(voices[0].getOscilator().getOsc2Detune());
+		screen.setOSC1Phase(voices[0].getOscilator().getOsc1Phase());
+		screen.setOSC2Phase(voices[0].getOscilator().getOsc2Phase());
+		
+		screen.setAmpAmplitude(amp.getAmplitude());
+		
+		screen.setFilterFrequency(voices[0].getFilter().getFrequency());
+		screen.setFilterResonance(voices[0].getFilter().getResonance());
+		screen.setFilterType(voices[0].getFilter().getType());
+		
+		screen.setDistortionGain((float) effects.getDistortion().gain.get());
+		screen.setDistortionStrength((float) effects.getDistortion().strength.get());
+		screen.setDistortionLevel((float) effects.getDistortion().level.get());
+		
+		screen.setBitCrusherResolution((float) effects.getBitCrusher().resolution.get());
+		screen.setBitCrusherBits((int) effects.getBitCrusher().bits.get());
+		screen.setBitCrusherLevel((float) effects.getBitCrusher().level.get());
 	}
 	
 	//--------------------------------------------------------------------------	
@@ -280,7 +308,7 @@ public class Synth implements Receiver
 				float frequency = value / 127.0f;
 				frequency *= 8000.0f;
 				
-				System.out.println("Setting filter frequency: " + frequency);
+				screen.setFilterFrequency(frequency);
 				
 				for (Voice v : voices)
 					v.getFilter().setFrequency(frequency);
@@ -292,7 +320,7 @@ public class Synth implements Receiver
 			{
 				float resonance = value / 127.0f;
 				
-				System.out.println("Setting filter resonance: " + resonance);
+				screen.setFilterResonance(resonance);
 				
 				for (Voice v : voices)
 					v.getFilter().setResonance(resonance);
@@ -313,7 +341,7 @@ public class Synth implements Receiver
 				
 				if (type != voices[0].getFilter().getType())
 				{
-					System.out.println("Setting filter type: " + type);
+					screen.setFilterType(type);
 					
 					for (Voice v : voices)
 						v.getFilter().setType(type);
@@ -329,7 +357,7 @@ public class Synth implements Receiver
 				float amplitude = value / 127.0f;
 				amp.setAmplitude(amplitude);
 				
-				System.out.println("Setting amp amplitude: " + amplitude);
+				screen.setAmpAmplitude(amplitude);
 				
 				break;
 			}
@@ -340,7 +368,7 @@ public class Synth implements Receiver
 				
 				if (type != voices[0].getOscilator().getOsc1Type())
 				{
-					System.out.println("Setting osc1 type: " + type);
+					screen.setOSC1Type(type);
 					
 					for (Voice v : voices)
 						v.getOscilator().setOsc1Type(type);
@@ -357,7 +385,7 @@ public class Synth implements Receiver
 				
 				if (type != voices[0].getOscilator().getOsc2Type())
 				{
-					System.out.println("Setting osc2 type: " + type);
+					screen.setOSC2Type(type);
 					
 					for (Voice v : voices)
 						v.getOscilator().setOsc2Type(type);
@@ -374,7 +402,7 @@ public class Synth implements Receiver
 				
 				if (mode != voices[0].getOscilator().getMixMode())
 				{
-					System.out.println("Setting mix mode: " + mode);
+					screen.setOSCMixMode(mode);
 					
 					for (Voice v : voices)
 						v.getOscilator().setMixMode(mode);
@@ -389,7 +417,7 @@ public class Synth implements Receiver
 			{
 				float ratio = value / 63.5f;
 				
-				System.out.println("Setting osc mix ratio: " + ratio);
+				screen.setOSCMIXRatio(ratio);
 				
 				for (Voice v : voices)
 					v.getOscilator().setRatio(ratio);
@@ -410,7 +438,7 @@ public class Synth implements Receiver
 				else
 					detune = 1.0f;
 								
-				System.out.println("Setting osc1 detune: " + detune);
+				screen.setOSC1Detune(detune);
 				
 				for (Voice v : voices)
 					v.getOscilator().setOsc1Detune(detune);
@@ -422,7 +450,7 @@ public class Synth implements Receiver
 			{
 				float phase = (value / 63.5f) - 1.0f;
 				
-				System.out.println("Setting osc1 phase: " + phase);
+				screen.setOSC1Phase(phase);
 				
 				for (Voice v : voices)
 					v.getOscilator().setOsc1Phase(phase);
@@ -443,7 +471,7 @@ public class Synth implements Receiver
 				else
 					detune = 1.0f;
 								
-				System.out.println("Setting osc2 detune: " + detune);
+				screen.setOSC2Detune(detune);
 				
 				for (Voice v : voices)
 					v.getOscilator().setOsc2Detune(detune);
@@ -455,7 +483,7 @@ public class Synth implements Receiver
 			{
 				float phase = (value / 63.5f) - 1.0f;
 				
-				System.out.println("Setting osc1 phase: " + phase);
+				screen.setOSC2Phase(phase);
 				
 				for (Voice v : voices)
 					v.getOscilator().setOsc1Phase(phase);
@@ -497,7 +525,7 @@ public class Synth implements Receiver
 			{
 				float gain = value / 6.35f;
 				
-				System.out.println("Setting distortion gain: " + gain);
+				screen.setDistortionGain(gain);
 				
 				effects.getDistortion().gain.set(gain);
 				
@@ -508,7 +536,7 @@ public class Synth implements Receiver
 			{
 				float strength = value / 15.825f;
 				
-				System.out.println("Setting distortion strength: " + strength);
+				screen.setDistortionStrength(strength);
 				
 				effects.getDistortion().strength.set(strength);
 				
@@ -519,7 +547,7 @@ public class Synth implements Receiver
 			{
 				float level = value / 63.5f;
 				
-				System.out.println("Setting distortion level: " + level);
+				screen.setDistortionLevel(level);
 				
 				effects.getDistortion().level.set(level);
 				
@@ -530,7 +558,7 @@ public class Synth implements Receiver
 			{
 				float resolution = value / 4.09f + 1.0f;
 				
-				System.out.println("Setting bit crusher resolution: " + resolution);
+				screen.setBitCrusherResolution(resolution);
 				
 				effects.getBitCrusher().resolution.set(resolution);
 				break;
@@ -540,7 +568,7 @@ public class Synth implements Receiver
 			{
 				float bits = (1.0f - value / 127.0f) * 30.0f + 2.0f;
 				
-				System.out.println("Setting bit crusher bits: " + bits);
+				screen.setBitCrusherBits((int) bits);
 				
 				effects.getBitCrusher().bits.set(bits);
 				
@@ -551,7 +579,7 @@ public class Synth implements Receiver
 			{
 				float level = value / 63.5f;
 				
-				System.out.println("Setting bit crusher level: " + level);
+				screen.setBitCrusherLevel(level);
 				
 				effects.getBitCrusher().level.set(level);
 				

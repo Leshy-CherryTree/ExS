@@ -38,6 +38,8 @@ public class Synth implements Receiver
 {
 	//--------------------------------------------------------------------------
 	
+	// Fix the order of LFO controls.
+	
 	private static final int AmpShift						= 1;
 	private static final int AmpLFOToggle					= 3;
 	
@@ -62,9 +64,10 @@ public class Synth implements Receiver
 	private static final int FilterShift						= 10;
 	private static final int FilterLFOToggle					= 12;
 	
-	private static final int FilterFrequencyLFORate			= 28;
-	private static final int FilterResonanceLFOAmplitude		= 29;
-	private static final int FilterPassTypeLFOType			= 30;
+	private static final int FilterPassTypeLFOType			= 28;
+	private static final int FilterFrequencyLFORate			= 29;
+	private static final int FilterResonanceLFOAmplitude		= 30;
+	
 
 	private static final int DistortionEnable				= 13;
 	private static final int DistortionLFOToggle				= 15;
@@ -196,6 +199,7 @@ public class Synth implements Receiver
 		
 		lineOut.start();
 
+		// Setting values on the display
 		screen.setOSCMixMode(voices[0].getOscilator().getMixMode());
 		screen.setOSCMIXRatio(voices[0].getOscilator().getRatio());
 		
@@ -212,10 +216,12 @@ public class Synth implements Receiver
 		screen.setFilterResonance(voices[0].getFilter().getResonance());
 		screen.setFilterType(voices[0].getFilter().getType());
 		
+		screen.setDistortionEnabled(effects.isDistortionEnabled());
 		screen.setDistortionGain((float) effects.getDistortion().gain.get());
 		screen.setDistortionStrength((float) effects.getDistortion().strength.get());
 		screen.setDistortionLevel((float) effects.getDistortion().level.get());
 		
+		screen.setBitCrusherEnabled(effects.isBitCrusherEnabled());
 		screen.setBitCrusherResolution((float) effects.getBitCrusher().resolution.get());
 		screen.setBitCrusherBits((int) effects.getBitCrusher().bits.get());
 		screen.setBitCrusherLevel((float) effects.getBitCrusher().level.get());
@@ -415,7 +421,7 @@ public class Synth implements Receiver
 			
 			case OSCMixRatioAmpLFOAmplitude:
 			{
-				float ratio = value / 63.5f;
+				float ratio = value / 127.0f;
 				
 				screen.setOSCMIXRatio(ratio);
 				
@@ -497,9 +503,9 @@ public class Synth implements Receiver
 				{
 					boolean enabled = !effects.isDistortionEnabled();
 					
-					System.out.println("Setting distortion: " + (enabled ? "enabled" : "disabled"));
-					
+					screen.setDistortionEnabled(enabled);					
 					effects.setDistortionEnabled(enabled);
+					
 					rebuild();
 				}
 				
@@ -512,9 +518,9 @@ public class Synth implements Receiver
 				{
 					boolean enabled = !effects.isBitCrusherEnabled();
 					
-					System.out.println("Setting bit crusher: " + (enabled ? "enabled" : "disabled"));
-					
+					screen.setBitCrusherEnabled(enabled);					
 					effects.setBitCrusherEnabled(enabled);
+					
 					rebuild();
 				}
 				

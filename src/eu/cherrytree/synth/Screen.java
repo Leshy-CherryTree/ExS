@@ -85,10 +85,10 @@ public class Screen
 		textGraphics.putString(FLT_C, 3, "FLT:", SGR.BOLD);
 		textGraphics.putString(AMP_C, 3, "AMP:", SGR.BOLD);
 		
-		textGraphics.putString(DST_C, 3, "DST:", SGR.BOLD);
-		textGraphics.putString(CRS_C, 3, "CRS:", SGR.BOLD);
-		textGraphics.putString(PHS_C, 3, "PHS:", SGR.BOLD);
-		textGraphics.putString(REV_C, 3, "REV:", SGR.BOLD);
+		textGraphics.putString(DST_C, 3, "DST:");
+		textGraphics.putString(CRS_C, 3, "CRS:");
+		textGraphics.putString(PHS_C, 3, "PHS:");
+		textGraphics.putString(REV_C, 3, "REV:");
 		
 		terminal.flush();
 	}
@@ -225,6 +225,16 @@ public class Screen
 	
 	//--------------------------------------------------------------------------
 	
+	public void setDistortionEnabled(boolean enabled)
+	{
+		if (enabled)
+			textGraphics.putString(DST_C, 3, "DST:", SGR.BOLD);
+		else
+			textGraphics.putString(DST_C, 3, "DST:");
+	}
+	
+	//--------------------------------------------------------------------------
+	
 	public void setDistortionGain(float gain)
 	{
 		drawFloat(DST_C, VAL_1, gain);
@@ -248,6 +258,16 @@ public class Screen
 		drawFloat(DST_C, VAL_3, level);
 		
 		flush();
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public void setBitCrusherEnabled(boolean enabled)
+	{
+		if (enabled)
+			textGraphics.putString(CRS_C, 3, "CRS:", SGR.BOLD);
+		else
+			textGraphics.putString(CRS_C, 3, "CRS:");		
 	}
 	
 	//--------------------------------------------------------------------------

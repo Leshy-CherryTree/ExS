@@ -151,7 +151,7 @@ public class OscillatorModule extends SynthModule
 	private MixMode mode = MixMode.Mix;
 
 	private int note = -1;
-	private float strength = -1.0f;
+	private float strength = 0.0f;
 	
 	private float ratio = 0.5f;
 	
@@ -183,6 +183,7 @@ public class OscillatorModule extends SynthModule
 	public void endNote()
 	{
 		note = -1;		
+		strength = 0.0f;
 
 		updateNote();
 	}
@@ -284,6 +285,9 @@ public class OscillatorModule extends SynthModule
 		{					
 			osc1.amplitude.set(0.0f);
 			osc2.amplitude.set(0.0f);
+			
+			if (mode == MixMode.Modulate)
+				modulate.inputB.set(0.0f);
 		}
 	}
 		
@@ -422,6 +426,7 @@ public class OscillatorModule extends SynthModule
 			
 			modulate.inputA.connect(osc1.output);
 			modulate.inputB.set(strength);
+			
 			modulate.ratio.set(ratio);
 			
 			modulate.output.connect(osc2.amplitude);

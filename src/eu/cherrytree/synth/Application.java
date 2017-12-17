@@ -21,7 +21,7 @@ public class Application
 	
 	public static void main(String[] args) throws IOException
 	{
-		Synth synth = new Synth(new Screen(), 8);
+		Synth synth = new Synth(new Screen(), 1);
 	}
 	
 	//--------------------------------------------------------------------------

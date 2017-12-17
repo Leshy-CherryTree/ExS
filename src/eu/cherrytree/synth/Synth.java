@@ -100,6 +100,8 @@ public class Synth implements Receiver
 	private boolean FilterShiftFlag = false;
 	
 	private HashMap<Integer, Voice> voice_note_map = new HashMap<>();
+	private ArrayList<Integer> pressed_notes = new ArrayList<>();
+	private ArrayList<Float> pressed_strengths = new ArrayList<>();
 	private ArrayList<Voice> used_voices = new ArrayList<>();
 	private ArrayList<Voice> free_voices = new ArrayList<>();
 	
@@ -258,6 +260,9 @@ public class Synth implements Receiver
 					voice_note_map.put(note, voice);
 					used_voices.add(voice);
 					
+					pressed_notes.add(note);
+					pressed_strengths.add(strength);
+					
 					break;
 				}
 				
@@ -265,12 +270,50 @@ public class Synth implements Receiver
 				{
 					int note = msg.getData1();
 					
-					Voice voice = voice_note_map.remove(note);
-					voice.getOscilator().endNote();
+					if (!pressed_notes.isEmpty())
+					{
+						int idx = pressed_notes.indexOf(note);
+						pressed_notes.remove(idx);
+						pressed_strengths.remove(idx);
+					}
 					
-					used_voices.remove(voice);
-					free_voices.add(voice);
-					
+					if (voice_note_map.containsKey(note))
+					{
+						Voice voice = voice_note_map.remove(note);
+						voice.getOscilator().endNote();
+
+						used_voices.remove(voice);
+						free_voices.add(voice);						
+						voice_note_map.remove(note);
+						
+						if (!pressed_notes.isEmpty())
+						{	
+							int last_idx = -1;
+						
+							for (int i = pressed_notes.size() - 1 ; i >= 0 ; i--)
+							{
+								int played_note = pressed_notes.get(i);
+																
+								if (!voice_note_map.containsKey(played_note))
+								{
+									last_idx = i;
+									break;
+								}
+							}
+							
+							if (last_idx >= 0)
+							{
+								int old_note = pressed_notes.get(last_idx);
+								float old_strength = pressed_strengths.get(last_idx);
+
+								voice.getOscilator().setNote(old_note, old_strength);
+								voice_note_map.put(old_note, voice);
+								used_voices.add(voice);	
+								free_voices.remove(voice);
+							}
+						}
+					}
+																														
 					break;
 				}
 				

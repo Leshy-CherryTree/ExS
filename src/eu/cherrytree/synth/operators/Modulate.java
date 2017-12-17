@@ -1,7 +1,7 @@
 /****************************************/
-/* Modulate.java						*/
+/* Modulate.java							*/
 /* Created on: 15-12-2017				*/
-/* Copyright Cherry Tree Studio 2017	*/
+/* Copyright Cherry Tree Studio 2017		*/
 /* Released under EUPL v1.1				*/
 /****************************************/
 
@@ -38,13 +38,7 @@ public class Modulate extends UnitBinaryOperator
 		double[] outputs = output.getValues();
 		
 		for (int i = start; i < limit; i++)
-		{
 			outputs[i] = inputs_a[i] * ratios[i] + inputs_b[i] * (1.0 - ratios[i]);
-			
-//			System.out.println("ina " + inputs_a[i]);
-//			System.out.println("inb " + inputs_b[i]);
-//			System.out.println("out " + outputs[i]);
-		}
 	}
 	
 	//--------------------------------------------------------------------------

@@ -5,7 +5,7 @@
 /* Released under EUPL v1.1				*/
 /****************************************/
 
-package eu.cherrytree.synth.modules;
+package eu.cherrytree.synth.types;
 
 /**
  *

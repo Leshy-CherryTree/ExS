@@ -11,10 +11,10 @@ import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
-import eu.cherrytree.synth.modules.FilterType;
-
-import eu.cherrytree.synth.modules.MixMode;
-import eu.cherrytree.synth.modules.OscilatorType;
+import eu.cherrytree.synth.types.FilterType;
+import eu.cherrytree.synth.types.LFOType;
+import eu.cherrytree.synth.types.MixMode;
+import eu.cherrytree.synth.types.OscilatorType;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -41,9 +41,15 @@ public class Screen
 	private static final int PHS_C =	CRS_C + SPC;
 	private static final int REV_C =	PHS_C + SPC;
 	
-	private static final int VAL_1 =	4;
-	private static final int VAL_2 =	5;
-	private static final int VAL_3 =	6;
+	private static final int VAL_T =	3;
+	private static final int VAL_1 =		4;
+	private static final int VAL_2 =		5;
+	private static final int VAL_3 =		6;
+	
+	private static final int LFO_T =	8;
+	private static final int LFO_1 =		9;	
+	private static final int LFO_2 =		10;
+	private static final int LFO_3 =		11;
 	
 	//--------------------------------------------------------------------------
 	
@@ -79,17 +85,22 @@ public class Screen
 		
 		textGraphics.putString(4, 1, "ExS-01", SGR.BOLD);
 		
-		textGraphics.putString(MIX_C, 3, "MIX:", SGR.BOLD);
-		textGraphics.putString(OC1_C, 3, "OSC1:", SGR.BOLD);
-		textGraphics.putString(OC2_C, 3, "OSC2:", SGR.BOLD);
-		textGraphics.putString(FLT_C, 3, "FLT:", SGR.BOLD);
-		textGraphics.putString(AMP_C, 3, "AMP:", SGR.BOLD);
+		textGraphics.putString(MIX_C, VAL_T, "MIX:",	SGR.BOLD);
+		textGraphics.putString(OC1_C, VAL_T, "OSC1:",	SGR.BOLD);
+		textGraphics.putString(OC2_C, VAL_T, "OSC2:",	SGR.BOLD);
+		textGraphics.putString(FLT_C, VAL_T, "FLT:",	SGR.BOLD);
+		textGraphics.putString(AMP_C, VAL_T, "AMP:",	SGR.BOLD);
 		
-		textGraphics.putString(DST_C, 3, "DST:");
-		textGraphics.putString(CRS_C, 3, "CRS:");
-		textGraphics.putString(PHS_C, 3, "PHS:");
-		textGraphics.putString(REV_C, 3, "REV:");
+		textGraphics.putString(DST_C, VAL_T, "DST:");
+		textGraphics.putString(CRS_C, VAL_T, "CRS:");
+		textGraphics.putString(PHS_C, VAL_T, "PHS:");
+		textGraphics.putString(REV_C, VAL_T, "REV:");
 		
+		textGraphics.putString(MIX_C, LFO_T, "LFO:",	SGR.BOLD);
+		textGraphics.putString(OC1_C, LFO_T, "LFO:",	SGR.BOLD);
+		textGraphics.putString(OC2_C, LFO_T, "LFO:",	SGR.BOLD);
+		textGraphics.putString(FLT_C, LFO_T, "LFO:",	SGR.BOLD);		
+						
 		terminal.flush();
 	}
 	
@@ -283,7 +294,7 @@ public class Screen
 	
 	public void setBitCrusherBits(int bits)
 	{
-		textGraphics.putString(CRS_C, VAL_2, String.format("%d",bits));
+		textGraphics.putString(CRS_C, VAL_2, String.format("%d ",bits));
 		
 		flush();
 	}
@@ -293,6 +304,60 @@ public class Screen
 	public void setBitCrusherLevel(float level)
 	{
 		drawFloat(CRS_C, VAL_3, level);
+		
+		flush();
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setAmpLFOType(LFOType type)
+	{
+		textGraphics.putString(MIX_C, LFO_1, type.getSymbol());
+		
+		flush();
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setAmpLFOAmplitude(float amplitude)
+	{
+		drawFloat(MIX_C, LFO_2, amplitude);
+		
+		flush();
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setAmpLFORate(float rate)
+	{
+		drawFloat(MIX_C, LFO_3, rate);
+		
+		flush();
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setFilterLFOType(LFOType type)
+	{
+		textGraphics.putString(FLT_C, LFO_1, type.getSymbol());
+		
+		flush();
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setFilterLFOAmplitude(float amplitude)
+	{
+		drawFloat(FLT_C, LFO_2, amplitude);
+		
+		flush();
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setFilterLFORate(float rate)
+	{
+		drawFloat(FLT_C, LFO_3, rate);
 		
 		flush();
 	}

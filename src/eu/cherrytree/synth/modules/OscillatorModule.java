@@ -7,12 +7,13 @@
 
 package eu.cherrytree.synth.modules;
 
+import eu.cherrytree.synth.types.OscilatorType;
+import eu.cherrytree.synth.types.MixMode;
 import eu.cherrytree.synth.operators.Modulate;
+
 import com.jsyn.Synthesizer;
 import com.jsyn.ports.UnitOutputPort;
-
 import com.jsyn.unitgen.MixerMono;
-import com.jsyn.unitgen.Multiply;
 import com.jsyn.unitgen.UnitOscillator;
 
 

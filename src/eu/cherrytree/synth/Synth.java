@@ -23,9 +23,10 @@ import javax.sound.midi.ShortMessage;
 
 import eu.cherrytree.synth.modules.AmpModule;
 import eu.cherrytree.synth.modules.EffectModule;
-import eu.cherrytree.synth.modules.FilterType;
-import eu.cherrytree.synth.modules.MixMode;
-import eu.cherrytree.synth.modules.OscilatorType;
+import eu.cherrytree.synth.types.FilterType;
+import eu.cherrytree.synth.types.LFOType;
+import eu.cherrytree.synth.types.MixMode;
+import eu.cherrytree.synth.types.OscilatorType;
 import java.util.Collections;
 
 
@@ -43,9 +44,9 @@ public class Synth implements Receiver
 	private static final int AmpShift						= 1;
 	private static final int AmpLFOToggle					= 3;
 	
-	private static final int OSCMixModeAmpFORateLFOType		= 16;
+	private static final int OSCMixModeAmpLFOType		= 16;
 	private static final int OSCMixRatioAmpLFOAmplitude		= 17;	
-	private static final int AmpLFOType						= 18;		// Add something here.
+	private static final int AmpLFORate						= 18;		// Add something here.
 	
 	private static final int OSC1Shift						= 4;
 	private static final int OSC1LFOToggle					= 6;
@@ -94,10 +95,10 @@ public class Synth implements Receiver
 	private EffectModule effects;
 	private LineOut lineOut;
 
-	private boolean OSC1ShiftFlag = false;
-	private boolean OSC2ShiftFlag = false;
-	private boolean AmpShiftFlag = false;
-	private boolean FilterShiftFlag = false;
+	private boolean OSC1LFOFlag = false;
+	private boolean OSC2LFOFlag = false;
+	private boolean ampLFOFlag = false;
+	private boolean filterLFOFlag = false;
 	
 	private HashMap<Integer, Voice> voice_note_map = new HashMap<>();
 	private ArrayList<Integer> pressed_notes = new ArrayList<>();
@@ -124,7 +125,7 @@ public class Synth implements Receiver
 			voices[i] = new Voice(synthesizer);			
 		
 		amp = new AmpModule(synthesizer, voiceCount);		
-		amp.setVoices(voices);
+		amp.rebuild(voices);
 		
 		effects = new EffectModule(synthesizer);
 		
@@ -182,7 +183,7 @@ public class Synth implements Receiver
 		for (Voice v : voices)
 			v.rebuild();
 		
-		amp.setVoices(voices);
+		amp.rebuild(voices);
 		
 		effects.rebuild();
 		
@@ -204,6 +205,14 @@ public class Synth implements Receiver
 		// Setting values on the display
 		screen.setOSCMixMode(voices[0].getOscilator().getMixMode());
 		screen.setOSCMIXRatio(voices[0].getOscilator().getRatio());
+		
+		screen.setAmpLFOType(amp.getLFO().getType());
+		screen.setAmpLFOAmplitude(amp.getLFO().getAmplitude());
+		screen.setAmpLFORate(amp.getLFO().getRate());
+		
+		screen.setFilterLFOType(voices[0].getFilter().getLFO().getType());
+		screen.setFilterLFOAmplitude(voices[0].getFilter().getLFO().getAmplitude());
+		screen.setFilterLFORate(voices[0].getFilter().getLFO().getRate());
 		
 		screen.setOSC1Type(voices[0].getOscilator().getOsc1Type());
 		screen.setOSC2Type(voices[0].getOscilator().getOsc2Type());
@@ -336,80 +345,202 @@ public class Synth implements Receiver
 	{
 		switch (id)
 		{
-			case AmpShift:
-				AmpShiftFlag = (value > 63);
-				break;
+			// ------------------------------------------------
+			// AMP/MIX CONTROL
+			// ------------------------------------------------
 			
-			case FilterShift:
-				FilterShiftFlag = (value > 63);
+			case AmpLFOToggle:
+				ampLFOFlag = (value > 63);
 				break;
-			
-			case OSC1Shift:
-				OSC1ShiftFlag = (value > 63);
-				break;
-			
-			case OSC2Shift:
-				OSC2ShiftFlag = (value > 63);
-				break;
-				
-			case FilterFrequencyLFORate:
-			{								
-				float frequency = value / 127.0f;
-				frequency *= 8000.0f;
-				
-				screen.setFilterFrequency(frequency);
-				
-				for (Voice v : voices)
-					v.getFilter().setFrequency(frequency);
-				
-				break;
-			}
-			
-			case FilterResonanceLFOAmplitude:
-			{
-				float resonance = value / 127.0f;
-				
-				screen.setFilterResonance(resonance);
-				
-				for (Voice v : voices)
-					v.getFilter().setResonance(resonance);
-				
-				break;
-			}
-			
-			case FilterPassTypeLFOType:
-			{
-				FilterType type;
-								
-				if (value <= 43)
-					type = FilterType.LowPass;
-				else if (value <= 85)
-					type = FilterType.BandPass;
-				else
-					type = FilterType.HighPass;
-				
-				if (type != voices[0].getFilter().getType())
-				{
-					screen.setFilterType(type);
-					
-					for (Voice v : voices)
-						v.getFilter().setType(type);
-
-					rebuild();
-				}
-								
-				break;
-			}
 			
 			case AmpAmplitude:
-			{								
+			{		
 				float amplitude = value / 127.0f;
-				amp.setAmplitude(amplitude);
 				
+				amp.setAmplitude(amplitude);				
 				screen.setAmpAmplitude(amplitude);
 				
 				break;
 			}
+			
+			case OSCMixModeAmpLFOType:
+			{
+				if (ampLFOFlag)
+				{
+					LFOType type = LFOType.get(value);
+					
+					if (type != amp.getLFO().getType())
+					{
+						amp.getLFO().setType(type);
+						screen.setAmpLFOType(type);
+						
+						rebuild();
+					}
+				}
+				else
+				{
+					MixMode mode = value > 63 ? MixMode.Mix : MixMode.Modulate;
+
+					if (mode != voices[0].getOscilator().getMixMode())
+					{
+						screen.setOSCMixMode(mode);
+
+						for (Voice v : voices)
+							v.getOscilator().setMixMode(mode);
+
+						rebuild();
+					}	
+				}				
+				
+				break;
+			}
+			
+			case OSCMixRatioAmpLFOAmplitude:
+			{
+				if (ampLFOFlag)
+				{
+					float amplitude = value / 127.0f;
+					
+					amp.getLFO().setAmplitude(amplitude);
+					screen.setAmpLFOAmplitude(amplitude);
+				}
+				else
+				{
+					float ratio = value / 127.0f;
+
+					screen.setOSCMIXRatio(ratio);
+
+					for (Voice v : voices)
+						v.getOscilator().setRatio(ratio);					
+				}
+				
+				break;
+			}
+			
+			case AmpLFORate:
+			{
+				if (ampLFOFlag)
+				{
+					float rate = value / 127.0f;
+					rate *= 19.0f;
+					rate += 1.0f;
+					
+					amp.getLFO().setRate(rate);
+					screen.setAmpLFORate(rate);
+				}
+				
+				break;
+			}
+
+
+			// ------------------------------------------------
+			// FILTER CONTROL
+			// ------------------------------------------------
+			
+			case FilterLFOToggle:
+				filterLFOFlag = (value > 63);
+				break;
+			
+			case FilterPassTypeLFOType:
+			{
+				if (filterLFOFlag)
+				{
+					LFOType type = LFOType.get(value);
+					
+					if (type != voices[0].getFilter().getLFO().getType())
+					{
+						for (Voice v : voices)
+							v.getFilter().getLFO().setType(type);
+						
+						screen.setFilterLFOType(type);
+						
+						rebuild();
+					}					
+				}
+				else
+				{
+					FilterType type;
+
+					if (value <= 43)
+						type = FilterType.LowPass;
+					else if (value <= 85)
+						type = FilterType.BandPass;
+					else
+						type = FilterType.HighPass;
+
+					if (type != voices[0].getFilter().getType())
+					{
+						screen.setFilterType(type);
+
+						for (Voice v : voices)
+							v.getFilter().setType(type);
+
+						rebuild();
+					}	
+				}
+												
+				break;
+			}
+				
+			case FilterResonanceLFOAmplitude:
+			{
+				if (filterLFOFlag)
+				{
+					float amplitude = value / 127.0f;
+					
+					for (Voice v : voices)
+						v.getFilter().getLFO().setAmplitude(amplitude);
+					
+					screen.setFilterLFOAmplitude(amplitude);
+				}
+				else
+				{
+					float resonance = value / 127.0f;
+				
+					screen.setFilterResonance(resonance);
+
+					for (Voice v : voices)
+						v.getFilter().setResonance(resonance);
+				}
+				
+				break;
+			}
+			
+			case FilterFrequencyLFORate:
+			{	
+				if (filterLFOFlag)
+				{
+					float rate = value / 127.0f;
+					rate *= 19.0f;
+					rate += 1.0f;
+					
+					for (Voice v : voices)
+						v.getFilter().getLFO().setRate(rate);
+					
+					screen.setFilterLFORate(rate);				
+				}
+				else
+				{
+					float frequency = value / 127.0f;
+					frequency *= 8000.0f;
+
+					screen.setFilterFrequency(frequency);
+
+					for (Voice v : voices)
+						v.getFilter().setFrequency(frequency);	
+				}
+				
+				
+				break;
+			}
+			
+			// ------------------------------------------------
+			// OSCILLATOR 1 CONTROL
+			// ------------------------------------------------
+			
+			case OSC1LFOToggle:
+				OSC1LFOFlag = (value > 63);
+				break;
 			
 			case OSC1TypeLFORate:
 			{
@@ -424,52 +555,6 @@ public class Synth implements Receiver
 					
 					rebuild();
 				}
-				
-				break;
-			}
-			
-			case OSC2TypeLFORate:
-			{
-				OscilatorType type = OscilatorType.get(value);
-				
-				if (type != voices[0].getOscilator().getOsc2Type())
-				{
-					screen.setOSC2Type(type);
-					
-					for (Voice v : voices)
-						v.getOscilator().setOsc2Type(type);
-					
-					rebuild();
-				}
-				
-				break;
-			}
-			
-			case OSCMixModeAmpFORateLFOType:
-			{
-				MixMode mode = value > 63 ? MixMode.Mix : MixMode.Modulate;
-				
-				if (mode != voices[0].getOscilator().getMixMode())
-				{
-					screen.setOSCMixMode(mode);
-					
-					for (Voice v : voices)
-						v.getOscilator().setMixMode(mode);
-					
-					rebuild();
-				}
-				
-				break;
-			}
-			
-			case OSCMixRatioAmpLFOAmplitude:
-			{
-				float ratio = value / 127.0f;
-				
-				screen.setOSCMIXRatio(ratio);
-				
-				for (Voice v : voices)
-					v.getOscilator().setRatio(ratio);
 				
 				break;
 			}
@@ -507,6 +592,31 @@ public class Synth implements Receiver
 				break;
 			}	
 			
+			// ------------------------------------------------
+			// OSCILLATOR 2 CONTROL
+			// ------------------------------------------------
+			
+			case OSC2LFOToggle:
+				OSC2LFOFlag = (value > 63);
+				break;
+			
+			case OSC2TypeLFORate:
+			{
+				OscilatorType type = OscilatorType.get(value);
+				
+				if (type != voices[0].getOscilator().getOsc2Type())
+				{
+					screen.setOSC2Type(type);
+					
+					for (Voice v : voices)
+						v.getOscilator().setOsc2Type(type);
+					
+					rebuild();
+				}
+				
+				break;
+			}
+		
 			case OSC2DetuneLFOAmplitude:
 			{
 				// Make it 2 octaves.
@@ -540,6 +650,10 @@ public class Synth implements Receiver
 				break;
 			}
 			
+			// ------------------------------------------------
+			// DISTORTION CONTROL
+			// ------------------------------------------------
+			
 			case DistortionEnable:
 			{
 				if (value > 63)
@@ -554,6 +668,40 @@ public class Synth implements Receiver
 				
 				break;
 			}
+			
+			case DistortionGainLFORate:
+			{
+				float gain = value / 6.35f;
+				
+				screen.setDistortionGain(gain);				
+				effects.getDistortion().gain.set(gain);
+				
+				break;
+			}
+			
+			case DistortionStrengthLFOAmplitude:
+			{
+				float strength = value / 15.825f;
+				
+				screen.setDistortionStrength(strength);				
+				effects.getDistortion().strength.set(strength);
+				
+				break;
+			}
+			
+			case DistortionLevelLFOType:
+			{
+				float level = value / 63.5f;
+				
+				screen.setDistortionLevel(level);				
+				effects.getDistortion().level.set(level);
+				
+				break;
+			}
+			
+			// ------------------------------------------------
+			// BITCRUSHER CONTROL
+			// ------------------------------------------------
 			
 			case BitCrusherEnable:
 			{
@@ -570,46 +718,13 @@ public class Synth implements Receiver
 				break;
 			}
 			
-			case DistortionGainLFORate:
-			{
-				float gain = value / 6.35f;
-				
-				screen.setDistortionGain(gain);
-				
-				effects.getDistortion().gain.set(gain);
-				
-				break;
-			}
-			
-			case DistortionStrengthLFOAmplitude:
-			{
-				float strength = value / 15.825f;
-				
-				screen.setDistortionStrength(strength);
-				
-				effects.getDistortion().strength.set(strength);
-				
-				break;
-			}
-			
-			case DistortionLevelLFOType:
-			{
-				float level = value / 63.5f;
-				
-				screen.setDistortionLevel(level);
-				
-				effects.getDistortion().level.set(level);
-				
-				break;
-			}
-			
 			case BitCrusherResolutionLFORate:
 			{
 				float resolution = value / 4.09f + 1.0f;
 				
-				screen.setBitCrusherResolution(resolution);
-				
+				screen.setBitCrusherResolution(resolution);				
 				effects.getBitCrusher().resolution.set(resolution);
+				
 				break;
 			}
 			
@@ -617,8 +732,7 @@ public class Synth implements Receiver
 			{
 				float bits = (1.0f - value / 127.0f) * 30.0f + 2.0f;
 				
-				screen.setBitCrusherBits((int) bits);
-				
+				screen.setBitCrusherBits((int) bits);				
 				effects.getBitCrusher().bits.set(bits);
 				
 				break;
@@ -628,8 +742,7 @@ public class Synth implements Receiver
 			{
 				float level = value / 63.5f;
 				
-				screen.setBitCrusherLevel(level);
-				
+				screen.setBitCrusherLevel(level);				
 				effects.getBitCrusher().level.set(level);
 				
 				break;

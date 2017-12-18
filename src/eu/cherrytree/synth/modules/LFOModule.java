@@ -11,6 +11,8 @@ import com.jsyn.Synthesizer;
 import com.jsyn.ports.UnitOutputPort;
 import com.jsyn.unitgen.UnitOscillator;
 
+import eu.cherrytree.synth.types.LFOType;
+
 
 
 /**
@@ -23,7 +25,10 @@ public class LFOModule extends SynthModule
 	
 	private UnitOscillator osc;
 	
-	private OscilatorType type;
+	private float amplitude = 1.0f;
+	private float rate = 10.0f;
+	
+	private LFOType type = LFOType.Off;
 	
 	//--------------------------------------------------------------------------
 	
@@ -34,45 +39,85 @@ public class LFOModule extends SynthModule
 	
 	//--------------------------------------------------------------------------
 	
-	public void setType(OscilatorType type)
+	public void setType(LFOType type)
 	{
-		if (type.getType() != osc.getClass())
-		{
-			this.type = type;
-			rebuild();
-		}
+		this.type = type;
 	}
 	
+	//--------------------------------------------------------------------------
+
+	public LFOType getType()
+	{
+		return type;
+	}
+			
 	//--------------------------------------------------------------------------
 	
 	public void setRate(float rate)
 	{
-		osc.frequency.set(rate);
+		if (type != LFOType.Off)
+			osc.frequency.set(rate);
+		
+		this.rate = rate;
 	}
 	
 	//--------------------------------------------------------------------------
 	
 	public void setAmplitude(float amplitude)
 	{
-		osc.amplitude.set(amplitude);
+		if (type != LFOType.Off)
+			osc.amplitude.set(amplitude);
+		
+		this.amplitude = amplitude;
 	}
 			
 	//--------------------------------------------------------------------------
-	
-	private void rebuild()
+
+	public float getRate()
 	{
-		getSynthesizer().remove(osc);
+		return rate;
+	}
+
+	//--------------------------------------------------------------------------
+	
+	public float getAmplitude()
+	{
+		return amplitude;
+	}		
+	
+	//--------------------------------------------------------------------------
+	
+	public void rebuild()
+	{
+		if (osc != null)
+		{
+			osc.output.disconnectAll();
+			getSynthesizer().remove(osc);
+		}
 		
-		osc = type.create();
-		
-		getSynthesizer().add(osc);
+		if (type != LFOType.Off)
+		{
+			osc = type.create();		
+			
+			osc.frequency.set(rate);
+			osc.amplitude.set(amplitude);
+			
+			getSynthesizer().add(osc);
+		}
+		else
+		{
+			osc = null;
+		}
 	}
 	
 	//--------------------------------------------------------------------------
 	
 	public UnitOutputPort getOutput()
 	{
-		return osc.output;
+		if (type != LFOType.Off)
+			return osc.output;
+		
+		return null;
 	}
 	
 	//--------------------------------------------------------------------------

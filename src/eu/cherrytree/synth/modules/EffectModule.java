@@ -28,10 +28,12 @@ public class EffectModule extends SynthModule
 	private BypassFilter bypass = new BypassFilter();
 	
 	private DistortionFilter distortion = new DistortionFilter();
-	private LFOModule distortionLFO;
+	private LFOUnitGeneratorModule distortionLFO;
+	private float distortionGain = 0.4f;
 	
 	private BitCrusherFilter bitCrusher = new BitCrusherFilter();
-	private LFOModule bitCrusherLFO;
+	private LFOUnitGeneratorModule bitCrusherLFO;
+	private float bitCrusherBits = 32.0f;
 	
 	private boolean distortionEnabled = false;
 	private boolean bitCrusherEnabled = false;
@@ -42,8 +44,8 @@ public class EffectModule extends SynthModule
 	{
 		super(synth);
 		
-		distortionLFO = new LFOModule(synth);
-		bitCrusherLFO = new LFOModule(synth);
+		distortionLFO = new LFOUnitGeneratorModule(synth, distortion.gain, distortionGain, 0.5f);
+		bitCrusherLFO = new LFOUnitGeneratorModule(synth, bitCrusher.bits, bitCrusherBits, 0.5f);
 		
 		synth.add(bypass);
 		synth.add(distortion);
@@ -101,22 +103,113 @@ public class EffectModule extends SynthModule
 			else
 				bypass.output.connect(bitCrusher.input);
 		}
+		
+		distortionLFO.rebuild();
+		bitCrusherLFO.rebuild();
 	}
 	
 	//--------------------------------------------------------------------------
 	
-	public BitCrusherFilter getBitCrusher()
+	public void setDistortionGain(float gain)
 	{
-		return bitCrusher;
-	}		
+		distortionGain = gain;
+		
+		distortionLFO.setValue(distortionGain);
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public void setDistortionStrength(float strength)
+	{
+		distortion.strength.set(strength);
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public void setDistortionLevel(float level)
+	{
+		distortion.strength.set(level);
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public float getDistortionGain()
+	{
+		return distortionGain;
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public float getDistortionStrength()
+	{
+		return (float) distortion.strength.get();
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public float getDistortionLevel()
+	{
+		return (float) distortion.level.get();
+	}
 	
 	//--------------------------------------------------------------------------
 
-	public DistortionFilter getDistortion()
+	public LFOUnitGeneratorModule getDistortionLFO()
 	{
-		return distortion;
+		return distortionLFO;
 	}
 	
+	//--------------------------------------------------------------------------
+	
+	public void setBitCrusherResolution(float resolution)
+	{				
+		bitCrusher.resolution.set(resolution);
+	}
+		
+	//--------------------------------------------------------------------------
+	
+	public void setBitCrusherBits(int bits)
+	{
+		bitCrusherBits = bits;
+		
+		bitCrusher.bits.set((double) bits);
+	}
+		
+	//--------------------------------------------------------------------------
+	
+	public void setBitCrusherLevel(float level)
+	{
+		bitCrusher.level.set(level);
+	}
+		
+	//--------------------------------------------------------------------------
+	
+	public float getBitCrusherResolution()
+	{
+		return (float) bitCrusher.resolution.get();
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public int getBitCrusherBits()
+	{
+		return (int) bitCrusherBits;
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public float getBitCrusherLevel()
+	{
+		return (float) bitCrusher.level.get();
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public LFOUnitGeneratorModule getBitCrusherLFO()
+	{
+		return bitCrusherLFO;
+	}
+
 	//--------------------------------------------------------------------------
 	
 	public UnitInputPort getInput()

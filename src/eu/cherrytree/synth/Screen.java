@@ -97,9 +97,14 @@ public class Screen
 		textGraphics.putString(REV_C, VAL_T, "REV:");
 		
 		textGraphics.putString(MIX_C, LFO_T, "LFO:",	SGR.BOLD);
-		textGraphics.putString(OC1_C, LFO_T, "LFO:",	SGR.BOLD);
-		textGraphics.putString(OC2_C, LFO_T, "LFO:",	SGR.BOLD);
-		textGraphics.putString(FLT_C, LFO_T, "LFO:",	SGR.BOLD);		
+//		textGraphics.putString(OC1_C, LFO_T, "LFO:",	SGR.BOLD);
+//		textGraphics.putString(OC2_C, LFO_T, "LFO:",	SGR.BOLD);
+		textGraphics.putString(FLT_C, LFO_T, "LFO:",	SGR.BOLD);
+		
+		textGraphics.putString(DST_C, LFO_T, "LFO:",	SGR.BOLD);
+		textGraphics.putString(CRS_C, LFO_T, "LFO:",	SGR.BOLD);
+//		textGraphics.putString(PHS_C, LFO_T, "LFO:",	SGR.BOLD);
+//		textGraphics.putString(REV_C, LFO_T, "LFO:",	SGR.BOLD);
 						
 		terminal.flush();
 	}
@@ -358,6 +363,60 @@ public class Screen
 	public void setFilterLFORate(float rate)
 	{
 		drawFloat(FLT_C, LFO_3, rate);
+		
+		flush();
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setDistortionLFOType(LFOType type)
+	{
+		textGraphics.putString(DST_C, LFO_1, type.getSymbol());
+		
+		flush();
+	}
+		
+	//--------------------------------------------------------------------------
+
+	public void setDistortionLFOAmplitude(float amplitude)
+	{
+		drawFloat(DST_C, LFO_2, amplitude);
+		
+		flush();		
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public void setDistortionLFORate(float rate)
+	{
+		drawFloat(DST_C, LFO_3, rate);
+		
+		flush();
+	}
+
+	//--------------------------------------------------------------------------
+
+	public void setBitCrusherLFOType(LFOType type)
+	{				
+		textGraphics.putString(CRS_C, LFO_1, type.getSymbol());
+		
+		flush();
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setBitCrusherLFORate(float rate)
+	{
+		drawFloat(CRS_C, LFO_3, rate);
+		
+		flush();				
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setBitCrusherLFOAmplitude(float amplitude)
+	{
+		drawFloat(CRS_C, LFO_2, amplitude);
 		
 		flush();
 	}

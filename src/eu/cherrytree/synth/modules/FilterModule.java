@@ -7,15 +7,12 @@
 
 package eu.cherrytree.synth.modules;
 
-
 import com.jsyn.Synthesizer;
 import com.jsyn.ports.UnitInputPort;
 import com.jsyn.ports.UnitOutputPort;
 import com.jsyn.unitgen.FilterStateVariable;
-import com.jsyn.unitgen.Multiply;
 
 import eu.cherrytree.synth.types.FilterType;
-import eu.cherrytree.synth.types.LFOType;
 
 
 
@@ -27,10 +24,8 @@ public class FilterModule extends SynthModule
 {
 	//--------------------------------------------------------------------------
 	
-	private FilterStateVariable filter;
-	
-	private Multiply multiply;
-	private LFOModule lfo;
+	private FilterStateVariable filter;	
+	private LFOUnitGeneratorModule lfoModule;
 	
 	private FilterType type = FilterType.LowPass;
 	
@@ -45,41 +40,26 @@ public class FilterModule extends SynthModule
 		filter = new FilterStateVariable();
 		synth.add(filter);
 		
-		multiply = new Multiply();
-		synth.add(multiply);
-		
-		lfo = new LFOModule(synth);
-		
-		multiply.inputA.set(1.0f);		
-		multiply.inputB.set(frequency);
-		
-		filter.frequency.connect(multiply.output);
+		lfoModule = new LFOUnitGeneratorModule(synth, filter.frequency, frequency, 1.0f);
 	}
 	
 	//--------------------------------------------------------------------------
 	
 	public void rebuild()
 	{
-		lfo.rebuild();
-		
 		filter.input.disconnectAll();
 		filter.highPass.disconnectAll();
 		filter.bandPass.disconnectAll();
 		filter.lowPass.disconnectAll();
 		
-		multiply.inputA.disconnectAll();
-		
-		if (lfo.getType() != LFOType.Off)
-			lfo.getOutput().connect(multiply.inputA);
-		else
-			multiply.inputA.set(1.0f);	
+		lfoModule.rebuild();
 	}
 	
 	//--------------------------------------------------------------------------
 
 	public LFOModule getLFO()
 	{
-		return lfo;
+		return lfoModule.getLFO();
 	}
 			
 	//--------------------------------------------------------------------------
@@ -116,10 +96,7 @@ public class FilterModule extends SynthModule
 	{
 		this.frequency = frequency;
 		
-		if (lfo.getType() == LFOType.Off)
-			multiply.inputA.set(1.0f);
-		
-		multiply.inputB.set(frequency);
+		lfoModule.setValue(frequency);
 	}
 	
 	//--------------------------------------------------------------------------

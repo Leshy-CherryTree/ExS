@@ -11,10 +11,8 @@ import com.jsyn.Synthesizer;
 
 import com.jsyn.ports.UnitOutputPort;
 import com.jsyn.unitgen.MixerMono;
-import com.jsyn.unitgen.Multiply;
 
 import eu.cherrytree.synth.Voice;
-import eu.cherrytree.synth.types.LFOType;
 
 
 
@@ -27,8 +25,7 @@ public class AmpModule extends SynthModule
 	//--------------------------------------------------------------------------
 	
 	private MixerMono mixer;
-	private Multiply multiply;
-	private LFOModule lfo;
+	private LFOUnitGeneratorModule lfoModule;
 	
 	private float amplitude = 1.0f;
 	
@@ -41,15 +38,7 @@ public class AmpModule extends SynthModule
 		mixer = new MixerMono(voiceCount);
 		synth.add(mixer);	
 		
-		multiply = new Multiply();
-		synth.add(multiply);
-		
-		lfo = new LFOModule(synth);
-		
-		multiply.inputA.set(1.0f);		
-		multiply.inputB.set(amplitude);
-		
-		mixer.amplitude.connect(multiply.output);
+		lfoModule = new LFOUnitGeneratorModule(synth, mixer.amplitude, amplitude, 0.5f);
 	}
 	
 	//--------------------------------------------------------------------------
@@ -58,10 +47,7 @@ public class AmpModule extends SynthModule
 	{
 		this.amplitude = amplitude;
 		
-		if (lfo.getType() != LFOType.Off)
-			multiply.inputA.set(1.0f);
-		
-		multiply.inputB.set(amplitude);
+		lfoModule.setValue(amplitude);
 	}
 	
 	//--------------------------------------------------------------------------
@@ -75,27 +61,20 @@ public class AmpModule extends SynthModule
 
 	public LFOModule getLFO()
 	{
-		return lfo;
+		return lfoModule.getLFO();
 	}
 	
 	//--------------------------------------------------------------------------
 	
 	public void rebuild(Voice[] voices)
 	{
-		lfo.rebuild();
-		
 		mixer.input.disconnectAll();
 		mixer.output.disconnectAll();
-		
-		multiply.inputA.disconnectAll();
 		
 		for (int i = 0 ; i < voices.length ; i++)
 			voices[i].getOutput().connect(0, mixer.input, i);
 		
-		if (lfo.getType() != LFOType.Off)
-			lfo.getOutput().connect(multiply.inputA);
-		else
-			multiply.inputA.set(1.0f);				
+		lfoModule.rebuild();
 	}
 	
 	//--------------------------------------------------------------------------

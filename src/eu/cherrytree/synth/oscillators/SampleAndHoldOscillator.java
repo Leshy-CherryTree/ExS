@@ -5,7 +5,7 @@
 /* Released under EUPL v1.1				*/
 /****************************************/
 
-package eu.cherrytree.synth.oscillator;
+package eu.cherrytree.synth.oscillators;
 
 import com.jsyn.unitgen.UnitOscillator;
 

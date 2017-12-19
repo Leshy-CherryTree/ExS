@@ -13,7 +13,7 @@ import com.jsyn.unitgen.SquareOscillator;
 import com.jsyn.unitgen.TriangleOscillator;
 import com.jsyn.unitgen.UnitOscillator;
 
-import eu.cherrytree.synth.oscillator.SampleAndHoldOscillator;
+import eu.cherrytree.synth.oscillators.SampleAndHoldOscillator;
 
 
 

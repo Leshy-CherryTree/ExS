@@ -27,6 +27,7 @@ import eu.cherrytree.synth.types.FilterType;
 import eu.cherrytree.synth.types.LFOType;
 import eu.cherrytree.synth.types.MixMode;
 import eu.cherrytree.synth.types.OscilatorType;
+
 import java.util.Collections;
 
 
@@ -44,7 +45,7 @@ public class Synth implements Receiver
 	private static final int AmpShift						= 1;
 	private static final int AmpLFOToggle					= 3;
 	
-	private static final int OSCMixModeAmpLFOType		= 16;
+	private static final int OSCMixModeAmpLFOType			= 16;
 	private static final int OSCMixRatioAmpLFOAmplitude		= 17;	
 	private static final int AmpLFORate						= 18;		// Add something here.
 	
@@ -65,24 +66,24 @@ public class Synth implements Receiver
 	private static final int FilterShift						= 10;
 	private static final int FilterLFOToggle					= 12;
 	
-	private static final int FilterPassTypeLFOType			= 28;
-	private static final int FilterFrequencyLFORate			= 29;
-	private static final int FilterResonanceLFOAmplitude		= 30;
+	private static final int FilterPassTypeLFOType			= 28;	
+	private static final int FilterFrequencyLFOAmplitude		= 29;
+	private static final int FilterResonanceLFORate			= 30;
 	
 
 	private static final int DistortionEnable				= 13;
 	private static final int DistortionLFOToggle				= 15;
 	
-	private static final int DistortionGainLFORate			= 46;
+	private static final int DistortionGainLFOType			= 46;
 	private static final int DistortionStrengthLFOAmplitude	= 47;
-	private static final int DistortionLevelLFOType			= 48;
+	private static final int DistortionLevelLFORate			= 48;
 	
 	private static final int BitCrusherEnable				= 32;
 	private static final int BitCrusherLFOToggle				= 34;
 	
-	private static final int BitCrusherResolutionLFORate		= 50;
+	private static final int BitCrusherResolutionLFOType		= 50;
 	private static final int BitCrusherBitsLFOAmplitude		= 51;
-	private static final int BitCrusherLevelLFOType			= 52;
+	private static final int BitCrusherLevelLFORate			= 52;
 	
 	private static final int AmpAmplitude					= 62;
 	
@@ -99,6 +100,9 @@ public class Synth implements Receiver
 	private boolean OSC2LFOFlag = false;
 	private boolean ampLFOFlag = false;
 	private boolean filterLFOFlag = false;
+	
+	private boolean distortionLFOFlag = false;
+	private boolean bitCrusherLFOFlag = false;
 	
 	private HashMap<Integer, Voice> voice_note_map = new HashMap<>();
 	private ArrayList<Integer> pressed_notes = new ArrayList<>();
@@ -228,14 +232,22 @@ public class Synth implements Receiver
 		screen.setFilterType(voices[0].getFilter().getType());
 		
 		screen.setDistortionEnabled(effects.isDistortionEnabled());
-		screen.setDistortionGain((float) effects.getDistortion().gain.get());
-		screen.setDistortionStrength((float) effects.getDistortion().strength.get());
-		screen.setDistortionLevel((float) effects.getDistortion().level.get());
+		screen.setDistortionGain(effects.getDistortionGain());
+		screen.setDistortionStrength(effects.getDistortionStrength());
+		screen.setDistortionLevel(effects.getDistortionLevel());
+		
+		screen.setDistortionLFOType(effects.getDistortionLFO().getLFO().getType());
+		screen.setDistortionLFOAmplitude(effects.getDistortionLFO().getLFO().getAmplitude());
+		screen.setDistortionLFORate(effects.getDistortionLFO().getLFO().getRate());
 		
 		screen.setBitCrusherEnabled(effects.isBitCrusherEnabled());
-		screen.setBitCrusherResolution((float) effects.getBitCrusher().resolution.get());
-		screen.setBitCrusherBits((int) effects.getBitCrusher().bits.get());
-		screen.setBitCrusherLevel((float) effects.getBitCrusher().level.get());
+		screen.setBitCrusherResolution(effects.getBitCrusherResolution());
+		screen.setBitCrusherBits(effects.getBitCrusherBits());
+		screen.setBitCrusherLevel(effects.getBitCrusherLevel());
+		
+		screen.setBitCrusherLFOType(effects.getBitCrusherLFO().getLFO().getType());
+		screen.setBitCrusherLFOAmplitude(effects.getBitCrusherLFO().getLFO().getAmplitude());
+		screen.setBitCrusherLFORate(effects.getBitCrusherLFO().getLFO().getRate());
 	}
 	
 	//--------------------------------------------------------------------------	
@@ -482,7 +494,7 @@ public class Synth implements Receiver
 				break;
 			}
 				
-			case FilterResonanceLFOAmplitude:
+			case FilterFrequencyLFOAmplitude:
 			{
 				if (filterLFOFlag)
 				{
@@ -495,18 +507,19 @@ public class Synth implements Receiver
 				}
 				else
 				{
-					float resonance = value / 127.0f;
-				
-					screen.setFilterResonance(resonance);
+					float frequency = value / 127.0f;
+					frequency *= 8000.0f;
+
+					screen.setFilterFrequency(frequency);
 
 					for (Voice v : voices)
-						v.getFilter().setResonance(resonance);
+						v.getFilter().setFrequency(frequency);	
 				}
 				
 				break;
 			}
 			
-			case FilterFrequencyLFORate:
+			case FilterResonanceLFORate:
 			{	
 				if (filterLFOFlag)
 				{
@@ -521,13 +534,12 @@ public class Synth implements Receiver
 				}
 				else
 				{
-					float frequency = value / 127.0f;
-					frequency *= 8000.0f;
-
-					screen.setFilterFrequency(frequency);
+					float resonance = value / 127.0f;
+				
+					screen.setFilterResonance(resonance);
 
 					for (Voice v : voices)
-						v.getFilter().setFrequency(frequency);	
+						v.getFilter().setResonance(resonance);					
 				}
 				
 				
@@ -654,6 +666,10 @@ public class Synth implements Receiver
 			// DISTORTION CONTROL
 			// ------------------------------------------------
 			
+			case DistortionLFOToggle:
+				distortionLFOFlag = (value > 63);
+				break;
+			
 			case DistortionEnable:
 			{
 				if (value > 63)
@@ -669,39 +685,81 @@ public class Synth implements Receiver
 				break;
 			}
 			
-			case DistortionGainLFORate:
+			case DistortionGainLFOType:
 			{
-				float gain = value / 6.35f;
+				if (distortionLFOFlag)
+				{
+					LFOType type = LFOType.get(value);
+					
+					if (type != effects.getDistortionLFO().getLFO().getType())
+					{
+						effects.getDistortionLFO().getLFO().setType(type);
+						screen.setDistortionLFOType(type);
+						
+						rebuild();
+					}					
+				}
+				else
+				{
+					float gain = value / 6.35f;
+
+					screen.setDistortionGain(gain);
+					effects.setDistortionGain(gain);					
+				}
 				
-				screen.setDistortionGain(gain);				
-				effects.getDistortion().gain.set(gain);
+				break;
+			}
+			
+			case DistortionLevelLFORate:
+			{
+				if (distortionLFOFlag)
+				{
+					float rate = value / 127.0f;
+					rate *= 19.0f;
+					rate += 1.0f;
+					
+					effects.getDistortionLFO().getLFO().setRate(rate);
+					screen.setDistortionLFORate(rate);					
+					
+				}
+				else
+				{
+					float level = value / 63.5f;
+
+					screen.setDistortionLevel(level);
+					effects.setDistortionLevel(level);					
+				}
 				
 				break;
 			}
 			
 			case DistortionStrengthLFOAmplitude:
 			{
-				float strength = value / 15.825f;
-				
-				screen.setDistortionStrength(strength);				
-				effects.getDistortion().strength.set(strength);
+				if (distortionLFOFlag)
+				{
+					float amplitude = value / 127.0f;
+					
+					effects.getDistortionLFO().getLFO().setAmplitude(amplitude);
+					screen.setDistortionLFOAmplitude(amplitude);
+				}
+				else
+				{
+					float strength = value / 15.825f;
+
+					screen.setDistortionStrength(strength);
+					effects.setDistortionStrength(strength);					
+				}
 				
 				break;
 			}
-			
-			case DistortionLevelLFOType:
-			{
-				float level = value / 63.5f;
-				
-				screen.setDistortionLevel(level);				
-				effects.getDistortion().level.set(level);
-				
-				break;
-			}
-			
+						
 			// ------------------------------------------------
 			// BITCRUSHER CONTROL
 			// ------------------------------------------------
+			
+			case BitCrusherLFOToggle:
+				bitCrusherLFOFlag = (value > 63);
+				break;
 			
 			case BitCrusherEnable:
 			{
@@ -718,37 +776,74 @@ public class Synth implements Receiver
 				break;
 			}
 			
-			case BitCrusherResolutionLFORate:
+			case BitCrusherResolutionLFOType:
 			{
-				float resolution = value / 4.09f + 1.0f;
+				if (bitCrusherLFOFlag)
+				{
+					LFOType type = LFOType.get(value);
+					
+					if (type != effects.getBitCrusherLFO().getLFO().getType())
+					{
+						effects.getBitCrusherLFO().getLFO().setType(type);
+						screen.setBitCrusherLFOType(type);
+						
+						rebuild();
+					}					
+				}
+				else
+				{
+					float resolution = value / 4.09f + 1.0f;
+
+					screen.setBitCrusherResolution(resolution);				
+					effects.setBitCrusherResolution(resolution);	
+				}
 				
-				screen.setBitCrusherResolution(resolution);				
-				effects.getBitCrusher().resolution.set(resolution);
 				
+				break;
+			}
+			
+			case BitCrusherLevelLFORate:
+			{
+				if (bitCrusherLFOFlag)
+				{
+					float rate = value / 127.0f;
+					rate *= 19.0f;
+					rate += 1.0f;
+					
+					effects.getBitCrusherLFO().getLFO().setRate(rate);
+					screen.setBitCrusherLFORate(rate);	
+				}
+				else
+				{
+					float level = value / 63.5f;
+
+					screen.setBitCrusherLevel(level);				
+					effects.setBitCrusherResolution(level);	
+				}
+								
 				break;
 			}
 			
 			case BitCrusherBitsLFOAmplitude:
 			{
-				float bits = (1.0f - value / 127.0f) * 30.0f + 2.0f;
+				if (bitCrusherLFOFlag)
+				{
+					float amplitude = value / 127.0f;
+					
+					effects.getBitCrusherLFO().getLFO().setAmplitude(amplitude);
+					screen.setBitCrusherLFOAmplitude(amplitude);				
+				}
+				else
+				{
+					float bits = (1.0f - value / 127.0f) * 30.0f + 2.0f;
+
+					screen.setBitCrusherBits((int) bits);				
+					effects.setBitCrusherResolution(bits);	
+				}
 				
-				screen.setBitCrusherBits((int) bits);				
-				effects.getBitCrusher().bits.set(bits);
 				
 				break;
-			}
-			
-			case BitCrusherLevelLFOType:
-			{
-				float level = value / 63.5f;
-				
-				screen.setBitCrusherLevel(level);				
-				effects.getBitCrusher().level.set(level);
-				
-				break;
-			}
-			
-			
+			}					
 		}
 	}
 	

@@ -50,7 +50,12 @@ public class BitCrusherFilter extends UnitFilter
 					ln = ln ^ val;															
 			}
 
-			return Double.longBitsToDouble(ln) / multiply;
+			double ret_val = Double.longBitsToDouble(ln) / multiply;
+			
+			if (Double.isNaN(ret_val))
+				return 0.0f;
+			
+			return ret_val;
 		}			
 	}
 	

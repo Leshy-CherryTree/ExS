@@ -52,16 +52,16 @@ public class Synth implements Receiver
 	private static final int OSC1Shift						= 4;
 	private static final int OSC1LFOToggle					= 6;
 	
-	private static final int OSC1TypeLFORate					= 20;
+	private static final int OSC1TypeLFOType					= 20;
 	private static final int OSC1DetuneLFOAmplitude			= 21;
-	private static final int OSC1PhaseLFOType				= 22;
+	private static final int OSC1PhaseLFORate				= 22;
 	
 	private static final int OSC2Shift						= 7;
 	private static final int OSC2LFOToggle					= 9;
 	
-	private static final int OSC2TypeLFORate					= 24;
+	private static final int OSC2TypeLFOType					= 24;
 	private static final int OSC2DetuneLFOAmplitude			= 25;
-	private static final int OSC2PhaseLFOType				= 26;
+	private static final int OSC2PhaseLFORate				= 26;
 	
 	private static final int FilterShift						= 10;
 	private static final int FilterLFOToggle					= 12;
@@ -205,7 +205,14 @@ public class Synth implements Receiver
 		}
 		
 		lineOut.start();
-
+		
+		updateScreen();
+	}
+	
+	//--------------------------------------------------------------------------	
+	
+	private void updateScreen()
+	{
 		// Setting values on the display
 		screen.setOSCMixMode(voices[0].getOscilator().getMixMode());
 		screen.setOSCMIXRatio(voices[0].getOscilator().getRatio());
@@ -219,11 +226,20 @@ public class Synth implements Receiver
 		screen.setFilterLFORate(voices[0].getFilter().getLFO().getRate());
 		
 		screen.setOSC1Type(voices[0].getOscilator().getOsc1Type());
-		screen.setOSC2Type(voices[0].getOscilator().getOsc2Type());
 		screen.setOSC1Detune(voices[0].getOscilator().getOsc1Detune());
-		screen.setOSC2Detune(voices[0].getOscilator().getOsc2Detune());
 		screen.setOSC1Phase(voices[0].getOscilator().getOsc1Phase());
+		
+		screen.setOSC1LFOType(voices[0].getOscilator().getOsc1LFOModule().getLFO().getType());
+		screen.setOSC1LFOAmplitude(voices[0].getOscilator().getOsc1LFOModule().getLFO().getAmplitude());
+		screen.setOSC1LFORate(voices[0].getOscilator().getOsc1LFOModule().getLFO().getRate());
+		
+		screen.setOSC2Type(voices[0].getOscilator().getOsc2Type());		
+		screen.setOSC2Detune(voices[0].getOscilator().getOsc2Detune());		
 		screen.setOSC2Phase(voices[0].getOscilator().getOsc2Phase());
+		
+		screen.setOSC2LFOType(voices[0].getOscilator().getOsc2LFOModule().getLFO().getType());
+		screen.setOSC2LFOAmplitude(voices[0].getOscilator().getOsc2LFOModule().getLFO().getAmplitude());
+		screen.setOSC2LFORate(voices[0].getOscilator().getOsc2LFOModule().getLFO().getRate());
 		
 		screen.setAmpAmplitude(amp.getAmplitude());
 		
@@ -247,7 +263,7 @@ public class Synth implements Receiver
 		
 		screen.setBitCrusherLFOType(effects.getBitCrusherLFO().getLFO().getType());
 		screen.setBitCrusherLFOAmplitude(effects.getBitCrusherLFO().getLFO().getAmplitude());
-		screen.setBitCrusherLFORate(effects.getBitCrusherLFO().getLFO().getRate());
+		screen.setBitCrusherLFORate(effects.getBitCrusherLFO().getLFO().getRate());		
 	}
 	
 	//--------------------------------------------------------------------------	
@@ -554,52 +570,93 @@ public class Synth implements Receiver
 				OSC1LFOFlag = (value > 63);
 				break;
 			
-			case OSC1TypeLFORate:
+			case OSC1TypeLFOType:
 			{
-				OscilatorType type = OscilatorType.get(value);
-				
-				if (type != voices[0].getOscilator().getOsc1Type())
+				if (OSC1LFOFlag)
 				{
-					screen.setOSC1Type(type);
+					LFOType type = LFOType.get(value);
 					
-					for (Voice v : voices)
-						v.getOscilator().setOsc1Type(type);
-					
-					rebuild();
+					if (type != voices[0].getOscilator().getOsc1LFOModule().getLFO().getType())
+					{
+						for (Voice v : voices)
+							v.getOscilator().getOsc1LFOModule().getLFO().setType(type);
+						
+						screen.setOSC1LFOType(type);
+						
+						rebuild();
+					}											
+				}
+				else
+				{
+					OscilatorType type = OscilatorType.get(value);
+
+					if (type != voices[0].getOscilator().getOsc1Type())
+					{
+						screen.setOSC1Type(type);
+
+						for (Voice v : voices)
+							v.getOscilator().setOsc1Type(type);
+
+						rebuild();
+					}					
 				}
 				
 				break;
 			}
 			
 			case OSC1DetuneLFOAmplitude:
-			{
-				// Make it 2 octaves.
-				
-				float detune = value / 127.0f;
-				
-				if (detune > 0.51f)
-					detune *= 2.0f;
-				else if (detune < 0.49f)
-					detune += 0.5f;
+			{				
+				if (OSC1LFOFlag)
+				{
+					float amplitude = value / 127.0f;
+					
+					for (Voice v : voices)
+						v.getOscilator().getOsc1LFOModule().getLFO().setAmplitude(amplitude);
+					
+					screen.setOSC1LFOAmplitude(amplitude);					
+				}
 				else
-					detune = 1.0f;
-								
-				screen.setOSC1Detune(detune);
-				
-				for (Voice v : voices)
-					v.getOscilator().setOsc1Detune(detune);
+				{
+					float detune = value / 127.0f;
+
+					if (detune > 0.51f)
+						detune *= 2.0f;
+					else if (detune < 0.49f)
+						detune += 0.5f;
+					else
+						detune = 1.0f;
+
+					screen.setOSC1Detune(detune);
+
+					for (Voice v : voices)
+						v.getOscilator().setOsc1Detune(detune);					
+				}
 				
 				break;
 			}
 			
-			case OSC1PhaseLFOType:
+			case OSC1PhaseLFORate:
 			{
-				float phase = (value / 63.5f) - 1.0f;
-				
-				screen.setOSC1Phase(phase);
-				
-				for (Voice v : voices)
-					v.getOscilator().setOsc1Phase(phase);
+				if (OSC1LFOFlag)
+				{
+					float rate = value / 127.0f;
+					rate *= 19.0f;
+					rate += 1.0f;
+					
+					for (Voice v : voices)
+						v.getOscilator().getOsc1LFOModule().getLFO().setRate(rate);
+					
+					screen.setOSC1LFORate(rate);						
+				}
+				else
+				{
+					float phase = (value / 63.5f) - 1.0f;
+
+					screen.setOSC1Phase(phase);
+
+					for (Voice v : voices)
+						v.getOscilator().setOsc1Phase(phase);					
+				}
 				
 				break;
 			}	
@@ -612,18 +669,35 @@ public class Synth implements Receiver
 				OSC2LFOFlag = (value > 63);
 				break;
 			
-			case OSC2TypeLFORate:
+			case OSC2TypeLFOType:
 			{
-				OscilatorType type = OscilatorType.get(value);
-				
-				if (type != voices[0].getOscilator().getOsc2Type())
+				if (OSC2LFOFlag)
 				{
-					screen.setOSC2Type(type);
+					LFOType type = LFOType.get(value);
 					
-					for (Voice v : voices)
-						v.getOscilator().setOsc2Type(type);
-					
-					rebuild();
+					if (type != voices[0].getOscilator().getOsc2LFOModule().getLFO().getType())
+					{
+						for (Voice v : voices)
+							v.getOscilator().getOsc2LFOModule().getLFO().setType(type);
+						
+						screen.setOSC2LFOType(type);
+						
+						rebuild();
+					}							
+				}
+				else
+				{
+					OscilatorType type = OscilatorType.get(value);
+				
+					if (type != voices[0].getOscilator().getOsc2Type())
+					{
+						screen.setOSC2Type(type);
+
+						for (Voice v : voices)
+							v.getOscilator().setOsc2Type(type);
+
+						rebuild();
+					}
 				}
 				
 				break;
@@ -631,33 +705,57 @@ public class Synth implements Receiver
 		
 			case OSC2DetuneLFOAmplitude:
 			{
-				// Make it 2 octaves.
-				
-				float detune = value / 127.0f;
-
-				if (detune > 0.51f)
-					detune *= 2.0f;
-				else if (detune < 0.49f)
-					detune += 0.5f;
+				if (OSC2LFOFlag)
+				{
+					float amplitude = value / 127.0f;
+					
+					for (Voice v : voices)
+						v.getOscilator().getOsc2LFOModule().getLFO().setAmplitude(amplitude);
+					
+					screen.setOSC2LFOAmplitude(amplitude);						
+				}
 				else
-					detune = 1.0f;
-								
-				screen.setOSC2Detune(detune);
-				
-				for (Voice v : voices)
-					v.getOscilator().setOsc2Detune(detune);
+				{
+					float detune = value / 127.0f;
+
+					if (detune > 0.51f)
+						detune *= 2.0f;
+					else if (detune < 0.49f)
+						detune += 0.5f;
+					else
+						detune = 1.0f;
+
+					screen.setOSC2Detune(detune);
+
+					for (Voice v : voices)
+						v.getOscilator().setOsc2Detune(detune);					
+				}
 				
 				break;
 			}
 			
-			case OSC2PhaseLFOType:
+			case OSC2PhaseLFORate:
 			{
-				float phase = (value / 63.5f) - 1.0f;
-				
-				screen.setOSC2Phase(phase);
-				
-				for (Voice v : voices)
-					v.getOscilator().setOsc1Phase(phase);
+				if (OSC2LFOFlag)
+				{
+					float rate = value / 127.0f;
+					rate *= 19.0f;
+					rate += 1.0f;
+					
+					for (Voice v : voices)
+						v.getOscilator().getOsc2LFOModule().getLFO().setRate(rate);
+
+					screen.setOSC2LFORate(rate);
+				}
+				else
+				{
+					float phase = (value / 63.5f) - 1.0f;
+
+					screen.setOSC2Phase(phase);
+
+					for (Voice v : voices)
+						v.getOscilator().setOsc1Phase(phase);					
+				}
 				
 				break;
 			}

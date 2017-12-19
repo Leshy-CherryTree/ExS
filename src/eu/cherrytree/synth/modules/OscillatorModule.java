@@ -169,7 +169,10 @@ public class OscillatorModule extends SynthModule
 	
 	public OscillatorModule(Synthesizer synth)
 	{
-		super(synth);				
+		super(synth);
+
+		osc1LFOModule = new LFOFrequencyModule(synth, 440.0f);
+		osc2LFOModule = new LFOFrequencyModule(synth, 440.0f);
 	}
 	
 	//--------------------------------------------------------------------------
@@ -236,6 +239,20 @@ public class OscillatorModule extends SynthModule
 	
 	//--------------------------------------------------------------------------
 
+	public LFOFrequencyModule getOsc1LFOModule()
+	{
+		return osc1LFOModule;
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public LFOFrequencyModule getOsc2LFOModule()
+	{
+		return osc2LFOModule;
+	}
+	
+	//--------------------------------------------------------------------------
+
 	public float getOsc1Detune()
 	{
 		return osc1Detune;
@@ -266,7 +283,7 @@ public class OscillatorModule extends SynthModule
 	
 	public void updateNote()		
 	{		
-		if(note > 0)
+		if (note > 0)
 		{
 			double osc1_freq = notes[note] * osc1Detune;
 			double osc2_freq = notes[note] * osc2Detune;
@@ -289,7 +306,7 @@ public class OscillatorModule extends SynthModule
 			}
 			
 			osc1LFOModule.setValue(osc1_freq);
-			osc1LFOModule.setValue(osc2_freq);
+			osc2LFOModule.setValue(osc2_freq);
 		}
 		else
 		{					
@@ -398,17 +415,7 @@ public class OscillatorModule extends SynthModule
 			
 			getSynthesizer().remove(mixer);
 		}
-		
-//		if (osc1LFOModule != null)
-//		{
-//			
-//		}
-//		
-//		if (osc2LFOModule != null)
-//		{
-//			
-//		}
-		
+						
 		if (modulate != null)
 		{
 			modulate.inputA.disconnectAll();
@@ -420,6 +427,9 @@ public class OscillatorModule extends SynthModule
 		
 		osc1 = osc1Type.create();
 		osc2 = osc2Type.create();
+		
+		osc1LFOModule.rebuild(osc1.frequency);
+		osc2LFOModule.rebuild(osc2.frequency);
 		
 		osc1.amplitude.set(0.0f);
 		osc2.amplitude.set(0.0f);

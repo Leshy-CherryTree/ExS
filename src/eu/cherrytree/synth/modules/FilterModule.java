@@ -40,7 +40,7 @@ public class FilterModule extends SynthModule
 		filter = new FilterStateVariable();
 		synth.add(filter);
 		
-		lfoModule = new LFOFrequencyModule(synth, filter, frequency);
+		lfoModule = new LFOFrequencyModule(synth, frequency);
 	}
 	
 	//--------------------------------------------------------------------------
@@ -52,7 +52,7 @@ public class FilterModule extends SynthModule
 		filter.bandPass.disconnectAll();
 		filter.lowPass.disconnectAll();
 		
-		lfoModule.rebuild();
+		lfoModule.rebuild(filter.frequency);
 	}
 	
 	//--------------------------------------------------------------------------

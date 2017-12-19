@@ -97,8 +97,8 @@ public class Screen
 		textGraphics.putString(REV_C, VAL_T, "REV:");
 		
 		textGraphics.putString(MIX_C, LFO_T, "LFO:",	SGR.BOLD);
-//		textGraphics.putString(OC1_C, LFO_T, "LFO:",	SGR.BOLD);
-//		textGraphics.putString(OC2_C, LFO_T, "LFO:",	SGR.BOLD);
+		textGraphics.putString(OC1_C, LFO_T, "LFO:",	SGR.BOLD);
+		textGraphics.putString(OC2_C, LFO_T, "LFO:",	SGR.BOLD);
 		textGraphics.putString(FLT_C, LFO_T, "LFO:",	SGR.BOLD);
 		
 		textGraphics.putString(DST_C, LFO_T, "LFO:",	SGR.BOLD);
@@ -417,6 +417,60 @@ public class Screen
 	public void setBitCrusherLFOAmplitude(float amplitude)
 	{
 		drawFloat(CRS_C, LFO_2, amplitude);
+		
+		flush();
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setOSC1LFOType(LFOType type)
+	{				
+		textGraphics.putString(OC1_C, LFO_1, type.getSymbol());
+		
+		flush();
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setOSC1LFORate(float rate)
+	{
+		drawFloat(OC1_C, LFO_3, rate);
+		
+		flush();				
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setOSC1LFOAmplitude(float amplitude)
+	{
+		drawFloat(OC1_C, LFO_2, amplitude);
+		
+		flush();
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setOSC2LFOType(LFOType type)
+	{				
+		textGraphics.putString(OC2_C, LFO_1, type.getSymbol());
+		
+		flush();
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setOSC2LFORate(float rate)
+	{
+		drawFloat(OC2_C, LFO_3, rate);
+		
+		flush();				
+	}
+	
+	//--------------------------------------------------------------------------
+
+	public void setOSC2LFOAmplitude(float amplitude)
+	{
+		drawFloat(OC2_C, LFO_2, amplitude);
 		
 		flush();
 	}

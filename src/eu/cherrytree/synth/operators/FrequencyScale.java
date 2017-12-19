@@ -1,5 +1,5 @@
 /****************************************/
-/* FrequencyScale.java						*/
+/* FrequencyScale.java					*/
 /* Created on: 15-12-2017				*/
 /* Copyright Cherry Tree Studio 2017		*/
 /* Released under EUPL v1.1				*/
@@ -51,7 +51,7 @@ public class FrequencyScale extends UnitGenerator
 			else if (scl_val < 0.0f)
 				outputs[i] = freq_val / (-scl_val + 1.0f);
 			else
-				outputs[i] = freq_val;						
+				outputs[i] = freq_val;	
 		}
 	}
 	

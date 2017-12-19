@@ -25,7 +25,7 @@ public class FilterModule extends SynthModule
 	//--------------------------------------------------------------------------
 	
 	private FilterStateVariable filter;	
-	private LFOUnitGeneratorModule lfoModule;
+	private LFOFrequencyModule lfoModule;
 	
 	private FilterType type = FilterType.LowPass;
 	
@@ -40,7 +40,7 @@ public class FilterModule extends SynthModule
 		filter = new FilterStateVariable();
 		synth.add(filter);
 		
-		lfoModule = new LFOUnitGeneratorModule(synth, filter.frequency, frequency, 1.0f);
+		lfoModule = new LFOFrequencyModule(synth, filter, frequency);
 	}
 	
 	//--------------------------------------------------------------------------
@@ -101,7 +101,7 @@ public class FilterModule extends SynthModule
 	
 	//--------------------------------------------------------------------------
 	
-	public void setResonance(float resonance)
+	public void setResonance(double resonance)
 	{
 		filter.resonance.set(resonance);
 	}

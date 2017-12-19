@@ -44,8 +44,8 @@ public class EffectModule extends SynthModule
 	{
 		super(synth);
 		
-		distortionLFO = new LFOUnitGeneratorModule(synth, distortion.gain, distortionGain, 0.5f);
-		bitCrusherLFO = new LFOUnitGeneratorModule(synth, bitCrusher.bits, bitCrusherBits, 0.5f);
+		distortionLFO = new LFOUnitGeneratorModule(synth, distortion.gain, distortionGain);
+		bitCrusherLFO = new LFOUnitGeneratorModule(synth, bitCrusher.bits, bitCrusherBits);
 		
 		synth.add(bypass);
 		synth.add(distortion);

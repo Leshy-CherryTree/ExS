@@ -38,7 +38,7 @@ public class AmpModule extends SynthModule
 		mixer = new MixerMono(voiceCount);
 		synth.add(mixer);	
 		
-		lfoModule = new LFOUnitGeneratorModule(synth, mixer.amplitude, amplitude, 0.5f);
+		lfoModule = new LFOUnitGeneratorModule(synth, mixer.amplitude, amplitude);
 	}
 	
 	//--------------------------------------------------------------------------

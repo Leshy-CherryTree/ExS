@@ -1,5 +1,5 @@
 /****************************************/
-/* LFOUnitGeneratorModule.java			*/
+/* LFOOscillatorFrequencyModule.java			*/
 /* Created on: 19-12-2017				*/
 /* Copyright Cherry Tree Studio 2017		*/
 /* Released under EUPL v1.1				*/
@@ -8,40 +8,54 @@
 package eu.cherrytree.synth.modules;
 
 import com.jsyn.Synthesizer;
-import com.jsyn.ports.UnitInputPort;
-import com.jsyn.unitgen.MultiplyAdd;
-
+import com.jsyn.unitgen.TunableFilter;
+import com.jsyn.unitgen.UnitOscillator;
+import eu.cherrytree.synth.operators.FrequencyScale;
 import eu.cherrytree.synth.types.LFOType;
-
-
 
 /**
  *
  * @author Leszek Szczepański <leszek.gamedev@gmail.com>
  */
-public class LFOUnitGeneratorModule extends SynthModule
+public class LFOFrequencyModule extends SynthModule
 {
 	//--------------------------------------------------------------------------
 	
-	private final MultiplyAdd multiply;	
+	private final FrequencyScale scale;
 	private final LFOModule lfo;
-
+	
 	//--------------------------------------------------------------------------
 	
-	public LFOUnitGeneratorModule(Synthesizer synth, UnitInputPort port, float value)
+	public LFOFrequencyModule(Synthesizer synth, UnitOscillator oscillator, float value)
 	{
 		super(synth);
 		
-		multiply = new MultiplyAdd();
-		synth.add(multiply);
+		scale = new FrequencyScale();
+		synth.add(scale);
 		
 		lfo = new LFOModule(synth);
 		
-		multiply.inputA.set(1.0);		
-		multiply.inputB.set(value * 0.5);
-		multiply.inputC.set(value * 0.5);
+		scale.scale.set(1.0f);		
+		scale.frequency.set(value);
 		
-		port.connect(multiply.output);
+		
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public LFOFrequencyModule(Synthesizer synth, TunableFilter filter, float value)
+	{
+		super(synth);
+		
+		scale = new FrequencyScale();
+		synth.add(scale);
+		
+		lfo = new LFOModule(synth);
+		
+		scale.scale.set(1.0f);		
+		scale.frequency.set(value);
+		
+		filter.frequency.connect(scale.output);
 	}
 	
 	//--------------------------------------------------------------------------
@@ -57,12 +71,12 @@ public class LFOUnitGeneratorModule extends SynthModule
 	{
 		lfo.rebuild();
 		
-		multiply.inputA.disconnectAll();
+		scale.scale.disconnectAll();
 		
 		if (lfo.getType() != LFOType.Off)
-			lfo.getOutput().connect(multiply.inputA);
+			lfo.getOutput().connect(scale.scale);
 		else
-			multiply.inputA.set(1.0);			
+			scale.scale.set(1.0);
 	}
 	
 	//--------------------------------------------------------------------------
@@ -70,10 +84,9 @@ public class LFOUnitGeneratorModule extends SynthModule
 	public void setValue(double value)
 	{
 		if (lfo.getType() == LFOType.Off)
-			multiply.inputA.set(1.0);
+			scale.scale.set(1.0);
 		
-		multiply.inputB.set(value * 0.5);
-		multiply.inputC.set(value * 0.5);
+		scale.frequency.set(value);
 	}
 	
 	//--------------------------------------------------------------------------

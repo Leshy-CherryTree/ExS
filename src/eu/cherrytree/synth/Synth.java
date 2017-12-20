@@ -9,6 +9,7 @@ package eu.cherrytree.synth;
 
 import com.jsyn.JSyn;
 import com.jsyn.Synthesizer;
+import com.jsyn.unitgen.FilterHighPass;
 import com.jsyn.unitgen.LineOut;
 
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import javax.sound.midi.ShortMessage;
 
 import eu.cherrytree.synth.modules.AmpModule;
 import eu.cherrytree.synth.modules.EffectModule;
+import eu.cherrytree.synth.modules.EqualizerModule;
 import eu.cherrytree.synth.types.FilterType;
 import eu.cherrytree.synth.types.LFOType;
 import eu.cherrytree.synth.types.MixMode;
@@ -47,7 +49,7 @@ public class Synth implements Receiver
 	
 	private static final int OSCMixModeAmpLFOType			= 16;
 	private static final int OSCMixRatioAmpLFOAmplitude		= 17;	
-	private static final int AmpLFORate						= 18;		// Add something here.
+	private static final int EqualizerQAmpLFORate			= 18;
 	
 	private static final int OSC1Shift						= 4;
 	private static final int OSC1LFOToggle					= 6;
@@ -87,6 +89,15 @@ public class Synth implements Receiver
 	
 	private static final int AmpAmplitude					= 62;
 	
+	private static final int Equalizer_01					= 19;
+	private static final int Equalizer_02					= 23;
+	private static final int Equalizer_03					= 27;
+	private static final int Equalizer_04					= 31;
+	private static final int Equalizer_05					= 49;
+	private static final int Equalizer_06					= 53;
+	private static final int Equalizer_07					= 57;
+	private static final int Equalizer_08					= 61;
+	
 	//--------------------------------------------------------------------------
 	
 	private Synthesizer synthesizer;
@@ -94,6 +105,7 @@ public class Synth implements Receiver
 	private Voice[] voices;	
 	private AmpModule amp;
 	private EffectModule effects;
+	private EqualizerModule equalizer;
 	private LineOut lineOut;
 
 	private boolean OSC1LFOFlag = false;
@@ -131,9 +143,10 @@ public class Synth implements Receiver
 		amp = new AmpModule(synthesizer, voiceCount);		
 		amp.rebuild(voices);
 		
-		effects = new EffectModule(synthesizer);
-		
+		effects = new EffectModule(synthesizer);		
 		synthesizer.add(lineOut);
+		
+		equalizer = new EqualizerModule(synthesizer);
 		
 		rebuild();
 		
@@ -166,6 +179,8 @@ public class Synth implements Receiver
 	
 	//--------------------------------------------------------------------------	
 	
+	
+	
 	private void rebuild()
 	{
 		ArrayList<Integer> notes = new ArrayList<>();
@@ -192,8 +207,9 @@ public class Synth implements Receiver
 		effects.rebuild();
 		
 		amp.getOutput().connect(effects.getInput());	
-		effects.getOutput().connect(lineOut.input);	
-		
+		equalizer.rebuild(effects.getOutput());		
+		equalizer.getOutput().connect(lineOut.input);	
+
 		// Restarting all notes.
 		for (int i = 0 ; i < used_len ; i++)
 		{
@@ -202,7 +218,7 @@ public class Synth implements Receiver
 			Voice voice = used_voices.get(i);
 			
 			voice.getOscilator().setNote(note, strength);						
-		}
+		}								
 		
 		lineOut.start();
 		
@@ -216,6 +232,7 @@ public class Synth implements Receiver
 		// Setting values on the display
 		screen.setOSCMixMode(voices[0].getOscilator().getMixMode());
 		screen.setOSCMIXRatio(voices[0].getOscilator().getRatio());
+		screen.setEqualizerQ(equalizer.getQ());
 		
 		screen.setAmpLFOType(amp.getLFO().getType());
 		screen.setAmpLFOAmplitude(amp.getLFO().getAmplitude());
@@ -263,7 +280,16 @@ public class Synth implements Receiver
 		
 		screen.setBitCrusherLFOType(effects.getBitCrusherLFO().getLFO().getType());
 		screen.setBitCrusherLFOAmplitude(effects.getBitCrusherLFO().getLFO().getAmplitude());
-		screen.setBitCrusherLFORate(effects.getBitCrusherLFO().getLFO().getRate());		
+		screen.setBitCrusherLFORate(effects.getBitCrusherLFO().getLFO().getRate());
+		
+		screen.setEQVal01(equalizer.getAmplitude(EqualizerModule.EqualizerBand.LowBand));
+		screen.setEQVal02(equalizer.getAmplitude(EqualizerModule.EqualizerBand.MidBand_01));
+		screen.setEQVal03(equalizer.getAmplitude(EqualizerModule.EqualizerBand.MidBand_02));
+		screen.setEQVal04(equalizer.getAmplitude(EqualizerModule.EqualizerBand.MidBand_03));
+		screen.setEQVal05(equalizer.getAmplitude(EqualizerModule.EqualizerBand.MidBand_04));
+		screen.setEQVal06(equalizer.getAmplitude(EqualizerModule.EqualizerBand.MidBand_05));
+		screen.setEQVal07(equalizer.getAmplitude(EqualizerModule.EqualizerBand.MidBand_06));
+		screen.setEQVal08(equalizer.getAmplitude(EqualizerModule.EqualizerBand.HighBand));		
 	}
 	
 	//--------------------------------------------------------------------------	
@@ -360,10 +386,7 @@ public class Synth implements Receiver
 					
 				default:
 					break;
-			}
-			
-//			System.out.println("A: " + msg.getData1());
-//			System.out.println("B: " + msg.getData2());
+			}			
 		}
 	}
 	
@@ -445,7 +468,7 @@ public class Synth implements Receiver
 				break;
 			}
 			
-			case AmpLFORate:
+			case EqualizerQAmpLFORate:
 			{
 				if (ampLFOFlag)
 				{
@@ -455,6 +478,15 @@ public class Synth implements Receiver
 					
 					amp.getLFO().setRate(rate);
 					screen.setAmpLFORate(rate);
+				}
+				else
+				{
+					float q = value / 127.0f;
+					q *= 9.9f;
+					q += 0.1f;
+					
+					equalizer.setQ(q);
+					screen.setEqualizerQ(q);
 				}
 				
 				break;
@@ -941,7 +973,91 @@ public class Synth implements Receiver
 				
 				
 				break;
-			}					
+			}
+			
+			// ------------------------------------------------
+			// EQUALIZER CONTROL
+			// ------------------------------------------------
+			
+			case Equalizer_01:
+			{
+				float v = value / 127.0f;			
+				equalizer.setAmplitude(EqualizerModule.EqualizerBand.LowBand, v);
+								
+				screen.setEQVal01(equalizer.getAmplitude(EqualizerModule.EqualizerBand.LowBand));
+				
+				break;
+			}
+			
+			case Equalizer_02:
+			{
+				float v = value / 127.0f;			
+				equalizer.setAmplitude(EqualizerModule.EqualizerBand.MidBand_01, v);
+				
+				screen.setEQVal02(equalizer.getAmplitude(EqualizerModule.EqualizerBand.MidBand_01));
+				
+				break;
+			}
+			
+			case Equalizer_03:
+			{
+				float v = value / 127.0f;			
+				equalizer.setAmplitude(EqualizerModule.EqualizerBand.MidBand_02, v);
+				
+				screen.setEQVal03(equalizer.getAmplitude(EqualizerModule.EqualizerBand.MidBand_02));
+				
+				break;
+			}
+			
+			case Equalizer_04:
+			{
+				float v = value / 127.0f;			
+				equalizer.setAmplitude(EqualizerModule.EqualizerBand.MidBand_03, v);
+				
+				screen.setEQVal04(equalizer.getAmplitude(EqualizerModule.EqualizerBand.MidBand_03));
+				
+				break;
+			}
+			
+			case Equalizer_05:
+			{
+				float v = value / 127.0f;			
+				equalizer.setAmplitude(EqualizerModule.EqualizerBand.MidBand_04, v);
+								
+				screen.setEQVal05(equalizer.getAmplitude(EqualizerModule.EqualizerBand.MidBand_04));
+				
+				break;
+			}
+			
+			case Equalizer_06:
+			{
+				float v = value / 127.0f;			
+				equalizer.setAmplitude(EqualizerModule.EqualizerBand.MidBand_05, v);
+				
+				screen.setEQVal06(equalizer.getAmplitude(EqualizerModule.EqualizerBand.MidBand_05));
+				
+				break;
+			}
+			
+			case Equalizer_07:
+			{
+				float v = value / 127.0f;			
+				equalizer.setAmplitude(EqualizerModule.EqualizerBand.MidBand_06, v);
+								
+				screen.setEQVal07(equalizer.getAmplitude(EqualizerModule.EqualizerBand.MidBand_06));
+				
+				break;
+			}
+			
+			case Equalizer_08:
+			{
+				float v = value / 127.0f;			
+				equalizer.setAmplitude(EqualizerModule.EqualizerBand.HighBand, v);
+				
+				screen.setEQVal08(equalizer.getAmplitude(EqualizerModule.EqualizerBand.HighBand));
+				
+				break;
+			}
 		}
 	}
 	

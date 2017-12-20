@@ -1,7 +1,7 @@
 /****************************************/
 /* Screen.java							*/
 /* Created on: 14-12-2017				*/
-/* Copyright Cherry Tree Studio 2017	*/
+/* Copyright Cherry Tree Studio 2017		*/
 /* Released under EUPL v1.1				*/
 /****************************************/
 
@@ -11,6 +11,7 @@ import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
+
 import eu.cherrytree.synth.types.FilterType;
 import eu.cherrytree.synth.types.LFOType;
 import eu.cherrytree.synth.types.MixMode;
@@ -35,12 +36,12 @@ public class Screen
 	private static final int OC1_C =	MIX_C + SPC;
 	private static final int OC2_C =	OC1_C + SPC;
 	private static final int FLT_C =	OC2_C + SPC;
-	private static final int AMP_C =	FLT_C + SPC;
-	private static final int DST_C =	AMP_C + SPC;
+	private static final int DST_C =	FLT_C + SPC;
 	private static final int CRS_C =	DST_C + SPC;
 	private static final int PHS_C =	CRS_C + SPC;
-	private static final int REV_C =	PHS_C + SPC;
-	
+	private static final int REV_C =	PHS_C + SPC;	
+	private static final int AMP_C =	REV_C + SPC;
+			
 	private static final int VAL_T =	3;
 	private static final int VAL_1 =		4;
 	private static final int VAL_2 =		5;
@@ -50,6 +51,19 @@ public class Screen
 	private static final int LFO_1 =		9;	
 	private static final int LFO_2 =		10;
 	private static final int LFO_3 =		11;
+	
+	private static final int EQ_T =		13;
+	private static final int EQ_C =		2;
+	
+	private static final int EQ_L =		14;
+	private static final int EQ_01 =		2;
+	private static final int EQ_02 =		EQ_01 + SPC;
+	private static final int EQ_03 =		EQ_02 + SPC;
+	private static final int EQ_04 =		EQ_03 + SPC;
+	private static final int EQ_05 =		EQ_04 + SPC;
+	private static final int EQ_06 =	EQ_05 + SPC;
+	private static final int EQ_07 =		EQ_06 + SPC;
+	private static final int EQ_08 =		EQ_07 + SPC;
 	
 	//--------------------------------------------------------------------------
 	
@@ -105,6 +119,8 @@ public class Screen
 		textGraphics.putString(CRS_C, LFO_T, "LFO:",	SGR.BOLD);
 //		textGraphics.putString(PHS_C, LFO_T, "LFO:",	SGR.BOLD);
 //		textGraphics.putString(REV_C, LFO_T, "LFO:",	SGR.BOLD);
+
+		textGraphics.putString(EQ_C, EQ_T, "EQ:",	SGR.BOLD);
 						
 		terminal.flush();
 	}
@@ -145,6 +161,15 @@ public class Screen
 	public void setOSCMIXRatio(float ratio)
 	{
 		drawFloat(MIX_C, VAL_2, ratio);
+		
+		flush();
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public void setEqualizerQ(float q)
+	{
+		drawFloat(MIX_C, VAL_3, q);
 		
 		flush();
 	}
@@ -473,6 +498,78 @@ public class Screen
 		drawFloat(OC2_C, LFO_2, amplitude);
 		
 		flush();
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public void setEQVal01(float value)
+	{
+		drawFloat(EQ_01, EQ_L, value);
+		
+		flush();		
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public void setEQVal02(float value)
+	{
+		drawFloat(EQ_02, EQ_L, value);
+		
+		flush();		
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public void setEQVal03(float value)
+	{
+		drawFloat(EQ_03, EQ_L, value);
+		
+		flush();		
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public void setEQVal04(float value)
+	{
+		drawFloat(EQ_04, EQ_L, value);
+		
+		flush();		
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public void setEQVal05(float value)
+	{
+		drawFloat(EQ_05, EQ_L, value);
+		
+		flush();		
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public void setEQVal06(float value)
+	{
+		drawFloat(EQ_06, EQ_L, value);
+		
+		flush();		
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public void setEQVal07(float value)
+	{
+		drawFloat(EQ_07, EQ_L, value);
+		
+		flush();		
+	}
+	
+	//--------------------------------------------------------------------------
+	
+	public void setEQVal08(float value)
+	{
+		drawFloat(EQ_08, EQ_L, value);
+		
+		flush();		
 	}
 	
 	//--------------------------------------------------------------------------
